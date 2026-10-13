@@ -29,7 +29,7 @@ function aplicarAberto(resultado, aberto, temInformacao) {
 // URFA e Endosso saem do arquivo da Bauk: se a Visão Geral já tem o dia, "Sem URFA"
 // e "Sem endosso" são resultado de verdade, não espera.
 // arquivosFechados = já passou do horário limite dos arquivos da Bauk (LIMITE_ARQUIVOS_BAUK,
-// padrão 10:30). Antes disso os arquivos ainda estão chegando: Bauk, Baixas e "Sem URFA/Sem
+// padrão 12:00). Antes disso os arquivos ainda estão chegando: Bauk, Baixas e "Sem URFA/Sem
 // endosso" ficam "Aguardando informações" (só aparece OK, nunca "Não realizado").
 function informacaoDoDia(b, iso, arquivosFechados = true) {
   const tem = (base) => doDia(base, iso).length > 0;
@@ -54,7 +54,7 @@ function informacaoDoDia(b, iso, arquivosFechados = true) {
     baixas: false,
     arquivosRpe: tem(b.arquivosRpe),
     // Flash Reports + BKs: a Bauk gera alguns minutos depois do endosso. Até o horário
-    // limite (LIMITE_FLASH_REPORT, padrão 11:00), sem arquivo processado fica "Aguardando";
+    // limite (LIMITE_FLASH_REPORT, padrão 12:00), sem arquivo processado fica "Aguardando";
     // depois, vale a planilha ("Não processado"). Processado = OK a qualquer hora.
     flash: false,
     represadas: tem(b.represadas) || (bauk && arquivosFechados),
@@ -378,7 +378,7 @@ function situacaoDoDia(b, iso, agora, horaEncerramento) {
 }
 
 export function montarDia(b, iso, { agora, horaFechamento, horaEncerramento = "18:00", limiteRpe = "14:00",
-  limiteEndosso = "15:00", limiteUrfa = "17:00", limiteArquivosBauk = "10:30", limiteFlash = "11:00",
+  limiteEndosso = "15:00", limiteUrfa = "17:00", limiteArquivosBauk = "12:00", limiteFlash = "12:00",
   mostrarResponsavel = true }) {
   b = prepararBases(b);
   const aberto = diaAberto(iso, agora, horaFechamento);

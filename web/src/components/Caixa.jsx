@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiCaixa } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
+import SeletorMes from "./SeletorMes.jsx";
 import { GraficoSaldo, GraficoEntradasSaidas, GraficoEnquadramento, GraficoRendimento } from "./Graficos.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, curta, pct, valorNum } from "../formato.js";
@@ -250,9 +251,8 @@ export default function Caixa({ aba, onAba }) {
         <nav className="navegacao" aria-label="Escolher mês">
           <button type="button" className="btn-icone" onClick={() => irPara(anterior)} disabled={!anterior}
             aria-label="Mês anterior">‹</button>
-          <select value={mes || ""} onChange={(e) => irPara(e.target.value)} aria-label="Mês do fluxo de caixa">
-            {meses.map((m) => <option key={m.id} value={m.id}>{m.rotulo}</option>)}
-          </select>
+          <SeletorMes meses={meses.map((m) => m.id)} valor={mes} onChange={irPara}
+            rotulo={(id) => meses.find((m) => m.id === id)?.rotulo ?? id} />
           <button type="button" className="btn-icone" onClick={() => irPara(proximo)} disabled={!proximo}
             aria-label="Próximo mês">›</button>
         </nav>

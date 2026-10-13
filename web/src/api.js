@@ -150,10 +150,8 @@ export const apiRelatorios = {
     if (!r["rel:despesas"]) throw Object.assign(new Error("O relatório de despesas ainda não foi publicado."), { status: 404 });
     return { despesas: r["rel:despesas"], meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
   },
-  // so = { mes: "AAAA-MM", nome } baixa só o mês (cópia gerada pelo publicador); sem "so", o histórico completo.
-  baixarDespesas: async (arquivo, so = null) => {
-    const caminho = so ? `despesas/meses/${so.mes}.xlsx` : "despesas/atual.xlsx";
-    const { data, error } = await supabase.storage.from("caixa").createSignedUrl(caminho, 60, { download: so ? so.nome : arquivo.nome });
+  baixarDespesas: async (arquivo) => {
+    const { data, error } = await supabase.storage.from("caixa").createSignedUrl("despesas/atual.xlsx", 60, { download: arquivo.nome });
     if (error || !data?.signedUrl) throw erroDe(error, "Arquivo indisponível no momento.");
     const a = document.createElement("a");
     a.href = data.signedUrl;

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { apiRelatorios } from "../api.js";
-import SeletorMes, { usePopover } from "./SeletorMes.jsx";
+import SeletorMes from "./SeletorMes.jsx";
 import { BarraTopo } from "./Cabecalho.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, valorNum } from "../formato.js";
@@ -63,16 +63,11 @@ export default function Despesas({ aba, onAba, onVoltar }) {
   const ant = i > 0 ? meses[i - 1] : null;
   const prox = i >= 0 && i < meses.length - 1 ? meses[i + 1] : null;
 
-  // "Baixar planilha": histórico completo (a planilha publicada) ou só o mês escolhido
-  // (cópia com o mesmo layout, gerada pelo publicador: despesas/meses/AAAA-MM.xlsx).
-  const menuBaixar = usePopover();
-  const baixar = async (soMes) => {
+  const baixar = async () => {
     if (baixando || !dados?.arquivo) return;
-    menuBaixar.setAberto(false);
     setBaixando(true);
     setFalhaBaixar(false);
-    try { await apiRelatorios.baixarDespesas(dados.arquivo, soMes ? { mes, nome: `Despesas Vox - ${longo(mes)}.xlsx` } : null); }
-    catch { setFalhaBaixar(true); } finally { setBaixando(false); }
+    try { await apiRelatorios.baixarDespesas(dados.arquivo); } catch { setFalhaBaixar(true); } finally { setBaixando(false); }
   };
 
   return (
@@ -94,25 +89,10 @@ export default function Despesas({ aba, onAba, onVoltar }) {
               </nav>
             )}
             {dados?.arquivo && (
-              <div className="menu-baixar" ref={menuBaixar.ref}>
-                <button type="button" className="button button--pequeno publicacao__baixar" disabled={baixando}
-                  aria-haspopup="menu" aria-expanded={menuBaixar.aberto} onClick={() => menuBaixar.setAberto((a) => !a)}
-                  title={`${dados.arquivo.nome} · publicada em ${dataHora(dados.arquivo.publicadoEm)}`}>
-                  <span aria-hidden="true">↓</span> {baixando ? "Baixando…" : falhaBaixar ? "Falhou, tente de novo" : "Baixar planilha"}
-                </button>
-                {menuBaixar.aberto && (
-                  <div className="menu-baixar__lista" role="menu">
-                    {mes && (
-                      <button type="button" role="menuitem" onClick={() => baixar(true)}>
-                        Só {longo(mes)}<small>o mês selecionado</small>
-                      </button>
-                    )}
-                    <button type="button" role="menuitem" onClick={() => baixar(false)}>
-                      Histórico completo<small>todos os meses publicados</small>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button type="button" className="button button--pequeno publicacao__baixar" onClick={baixar} disabled={baixando}
+                title={`${dados.arquivo.nome} · publicada em ${dataHora(dados.arquivo.publicadoEm)}`}>
+                <span aria-hidden="true">↓</span> {baixando ? "Baixando…" : falhaBaixar ? "Falhou, tente de novo" : "Baixar planilha"}
+              </button>
             )}
           </div>
         </div>

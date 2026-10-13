@@ -16,7 +16,7 @@ import { gerarOperacional, gerarCaixa, gerarRelatorios, gerarDespesas, gerarApre
 import { listarBalancetes, caminhoNuvem, TIPO_CONTEUDO } from "../server/balancetes.js";
 import { listarApresentacoes } from "../server/apresentacoes.js";
 import { listarLaminas } from "../server/laminas.js";
-import { arquivoPublicado, lerDespesas, planilhaDoMes } from "../server/despesas.js";
+import { arquivoPublicado, lerDespesas } from "../server/despesas.js";
 import { conectar, gravarChaves, apagarChaves, enviarArquivo } from "./nuvem.js";
 import { statusDoDia } from "./bauk.js";
 import { faseBauk, isoLocal, prepararBases, montarDia } from "../server/status.js";
@@ -203,14 +203,9 @@ export async function publicar({ tudo = false } = {}) {
 
   // Despesas: o arquivo mais recente da pasta de publicados
   let despesasArq = null;
-  let despesasMeses = [];
   try {
     despesasArq = await arquivoPublicado(config.despesasPublicado);
-    if (despesasArq) {
-      const despesas = await lerDespesas(despesasArq.caminho);
-      despesasMeses = despesas?.meses || [];
-      Object.assign(mapa, gerarDespesas(despesas, despesasArq));
-    }
+    if (despesasArq) Object.assign(mapa, gerarDespesas(await lerDespesas(despesasArq.caminho), despesasArq));
   } catch (e) { aviso(`Despesas: ${e.message}`); despesasArq = null; }
 
   // Apresentações de Resultados: os PDFs da pasta de publicados (um por mês)
@@ -265,16 +260,6 @@ export async function publicar({ tudo = false } = {}) {
     await enviarArquivo(sb, "despesas/atual.xlsx", fs.readFileSync(despesasArq.caminho));
     arquivos.despesas = despesasArq.mtimeMs;
     enviados++;
-  }
-  // "Só o mês": uma cópia da planilha por mês, com o mesmo layout (despesas/meses/AAAA-MM.xlsx).
-  if (despesasArq && (tudo || arquivos.despesasMeses !== despesasArq.mtimeMs)) {
-    let ok = true;
-    for (const mes of despesasMeses) {
-      try { await enviarArquivo(sb, `despesas/meses/${mes}.xlsx`, await planilhaDoMes(despesasArq.caminho, mes)); enviados++; }
-      catch (e) { ok = false; aviso(`Despesas, planilha só de ${mes}: ${e.message}`); }
-    }
-    if (ok) arquivos.despesasMeses = despesasArq.mtimeMs;
-    if (despesasMeses.length) log(`Despesas: planilhas por mês enviadas (${despesasMeses.length}).`);
   }
 
   for (const a of apresentacoes || []) {

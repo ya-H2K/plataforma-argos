@@ -6,6 +6,7 @@ import Apresentacoes from "./Apresentacoes.jsx";
 import Balancetes from "./Balancetes.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, curta, valorNum } from "../formato.js";
+import SeletorMes from "./SeletorMes.jsx";
 
 // Aba "Relatórios" (só o admin vê, por enquanto): lista de relatórios e cada relatório.
 // #/relatorios = lista; #/relatorios/desagio = Deságio das cessões de URFA.
@@ -168,9 +169,7 @@ function Desagio({ aba, onAba, onVoltar }) {
               {modo === "mes" ? (
                 <>
                   <button type="button" className="btn-icone" onClick={() => setMes(anterior)} disabled={!anterior} aria-label="Mês anterior">‹</button>
-                  <select value={mes || ""} onChange={(e) => setMes(e.target.value)} aria-label="Mês">
-                    {meses.map((m) => <option key={m} value={m}>{rotuloMes(m)}</option>)}
-                  </select>
+                  <SeletorMes meses={meses} valor={mes} onChange={setMes} rotulo={rotuloMes} />
                   <button type="button" className="btn-icone" onClick={() => setMes(proximo)} disabled={!proximo} aria-label="Próximo mês">›</button>
                 </>
               ) : (
