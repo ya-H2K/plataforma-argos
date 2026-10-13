@@ -149,7 +149,8 @@ export default function Operacional({ aba, onAba }) {
 
   const diaAtual = dia && dia.data === selecionada ? dia : null;
 
-  // "Baixar PDF": a página A4 do report do dia aberto na tela (pdfReport.jsx).
+  // "Baixar PDF": a página A4 do report do dia aberto na tela (pdfReport.jsx). Link discreto à
+  // direita, logo abaixo do "Atualizar agora": na linha das abas (admin) ou no espaço acima dos cards.
   const baixarPdf = async () => {
     if (!diaAtual || gerandoPdf) return;
     setGerandoPdf(true);
@@ -157,6 +158,12 @@ export default function Operacional({ aba, onAba }) {
     catch (e) { console.error(e); window.alert("Não consegui gerar o PDF agora. Tente de novo em instantes."); }
     finally { setGerandoPdf(false); }
   };
+  const botaoPdf = (
+    <button type="button" className="botao-pdf" onClick={baixarPdf} disabled={!diaAtual || gerandoPdf}
+      title="Baixar o report deste dia em PDF">
+      <span aria-hidden="true">↓</span> {gerandoPdf ? "Gerando PDF…" : "Baixar PDF"}
+    </button>
+  );
 
   return (
     <>
@@ -170,9 +177,6 @@ export default function Operacional({ aba, onAba }) {
             aria-label="Próximo dia">›</button>
           <button type="button" className="button button--pequeno" onClick={() => irPara(hoje)}
             disabled={!hoje || selecionada === hoje}>Hoje</button>
-          <button type="button" className="button button--pequeno" onClick={baixarPdf}
-            disabled={!diaAtual || gerandoPdf} title="Baixar o report deste dia em PDF">
-            {gerandoPdf ? "Gerando…" : "Baixar PDF"}</button>
         </nav>
       </BarraTopo>
       <div className="pagina">
@@ -186,13 +190,16 @@ export default function Operacional({ aba, onAba }) {
           <p className="vazio">Sem movimento registrado neste dia.</p>
         ) : (
           <>
-            {admin && (
+            {admin ? (
               <nav className="abas-report" aria-label="Visão do report">
                 {[["resumo", "Resumo"], ["horarios", "Horários"]].map(([id, nome]) => (
                   <button key={id} type="button" className={vista === id ? "on" : undefined}
                     aria-pressed={vista === id} onClick={() => setVista(id)}>{nome}</button>
                 ))}
+                {botaoPdf}
               </nav>
+            ) : (
+              <div className="pdf-ancora">{botaoPdf}</div>
             )}
             {admin && vista === "horarios"
               ? <Horarios dia={diaAtual} />

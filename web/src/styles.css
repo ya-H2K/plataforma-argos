@@ -427,6 +427,20 @@ a.marca:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
 .seletor-mes__grade button:disabled { color: var(--text-dim); opacity: .35; cursor: default; }
 .seletor-mes__grade button.on, .seletor-mes__grade button.on:hover { background: var(--gold); color: var(--texto-sobre-dourado); border-color: var(--gold); }
 
+/* "Baixar PDF" do Report: link discreto à direita, abaixo do "Atualizar agora" (não empurra nada) */
+.botao-pdf {
+  display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; padding: .15rem .1rem;
+  background: none; border: 0; border-bottom: 1px solid transparent; color: var(--gold); font-size: .78rem; cursor: pointer;
+}
+.botao-pdf:not(:disabled):hover { color: var(--gold-bright); border-bottom-color: var(--gold); }
+.botao-pdf:disabled { color: var(--text-dim); cursor: default; }
+.abas-report { align-items: center; }
+.abas-report .botao-pdf { margin: 0 0 0 auto; padding: .15rem .1rem; text-transform: none; letter-spacing: normal; font-size: .78rem; color: var(--gold); border-bottom: 1px solid transparent; }
+.abas-report .botao-pdf:not(:disabled):hover { color: var(--gold-bright); border-bottom-color: var(--gold); }
+.abas-report .botao-pdf:disabled { color: var(--text-dim); }
+/* usuários (sem a linha das abas): uma linha própria, com respiro do "Atualizar agora" e dos cards */
+.pdf-ancora { display: flex; justify-content: flex-end; margin: -.25rem 0 1.1rem; }
+
 .quadro-obs__vazio td { color: var(--text-dim) !important; padding-top: .2rem !important; }
 
 /* -------------------------------------------------------- selo de status */
