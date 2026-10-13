@@ -114,14 +114,7 @@ function BarraContexto({ dia, ultimo, onMes }) {
             {dia ? `Dia ${curta(dia.data)}` : "Dia"}
           </button>
         </span>
-        {dia ? (
-          <>
-            <span>Mostrando o movimento de {curta(dia.data)}.</span>
-            <button type="button" className="botao-texto" onClick={onMes}>Ver o mês inteiro</button>
-          </>
-        ) : (
-          <span>Clique numa data da tabela ou dos gráficos para ver o movimento do dia.</span>
-        )}
+        {!dia && <span>Clique numa data da tabela ou dos gráficos para ver o movimento do dia.</span>}
       </div>
       {ref?.enquadramento != null && (
         <div className={`contexto__enq enq--${f}`}>
