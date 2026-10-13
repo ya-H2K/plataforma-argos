@@ -8,6 +8,7 @@
     "start": "node server/index.js"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.1.0",
     "@supabase/supabase-js": "^2.117.2",
     "dotenv": "^18.0.3",
     "exceljs": "^4.4.0",
