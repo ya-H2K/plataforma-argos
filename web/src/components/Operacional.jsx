@@ -4,12 +4,14 @@ import { BarraTopo, CabecaPagina } from "./Cabecalho.jsx";
 import Report from "./Report.jsx";
 import Horarios from "./Horarios.jsx";
 import { useSessao } from "../sessao.js";
+import { baixarPdfReport } from "../pdfReport.jsx";
 
 // Aba "Fluxo operacional": a mesma tela de antes, agora como uma das abas do site.
 export default function Operacional({ aba, onAba }) {
   const { usuario } = useSessao();
   const admin = Boolean(usuario?.admin);
   const [vista, setVista] = useState("resumo");           // resumo | horarios (aba Horários: só o admin)
+  const [gerandoPdf, setGerandoPdf] = useState(false);
   const [datas, setDatas] = useState([]);
   const [meta, setMeta] = useState(null);
   const [hoje, setHoje] = useState(null);                // dia sugerido pelo servidor (hoje, ou o último útil)
@@ -147,6 +149,15 @@ export default function Operacional({ aba, onAba }) {
 
   const diaAtual = dia && dia.data === selecionada ? dia : null;
 
+  // "Baixar PDF": a página A4 do report do dia aberto na tela (pdfReport.jsx).
+  const baixarPdf = async () => {
+    if (!diaAtual || gerandoPdf) return;
+    setGerandoPdf(true);
+    try { await baixarPdfReport(diaAtual, { mostrarResponsavel: meta?.mostrarResponsavel !== false }); }
+    catch (e) { console.error(e); window.alert("Não consegui gerar o PDF agora. Tente de novo em instantes."); }
+    finally { setGerandoPdf(false); }
+  };
+
   return (
     <>
       <BarraTopo aba={aba} onAba={onAba}>
@@ -159,6 +170,9 @@ export default function Operacional({ aba, onAba }) {
             aria-label="Próximo dia">›</button>
           <button type="button" className="button button--pequeno" onClick={() => irPara(hoje)}
             disabled={!hoje || selecionada === hoje}>Hoje</button>
+          <button type="button" className="button button--pequeno" onClick={baixarPdf}
+            disabled={!diaAtual || gerandoPdf} title="Baixar o report deste dia em PDF">
+            {gerandoPdf ? "Gerando…" : "Baixar PDF"}</button>
         </nav>
       </BarraTopo>
       <div className="pagina">
