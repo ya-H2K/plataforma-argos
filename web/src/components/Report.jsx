@@ -35,7 +35,7 @@ function Detalhe({ id, d }) {
         <span className="det__principal"><b>{d.arquivos}</b> {plural(d.arquivos, "arquivo gerado", "arquivos gerados")} pela Bauk</span>
         {d.arquivos > 0 && (
           <span className="det__nota">
-            {d.tipos} {plural(d.tipos, "tipo de arquivo", "tipos de arquivo")}{d.endosso ? " · endosso recebido" : ""}
+            {d.tipos} {plural(d.tipos, "tipo de arquivo", "tipos de arquivo")}
           </span>
         )}
       </>
