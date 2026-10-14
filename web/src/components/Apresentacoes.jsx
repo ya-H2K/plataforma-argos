@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiApresentacoes, apiLaminas } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
+import SeletorMes from "./SeletorMes.jsx";
 import VisorPdf from "./VisorPdf.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 
@@ -168,13 +169,21 @@ function Visor({ t, aba, onAba, itens, item, mes, erro, onTrocar, onVoltar }) {
             <p className="page-sub">FIDC Vox — {LONGOS[Number(mes.slice(5, 7)) - 1]} de {mes.slice(0, 4)}</p>
           </div>
           <div className="apr__acoes">
-            <label className="apr__campo">
+            <div className="apr__campo">
               <span>Edição</span>
-              <select value={item ? mes : ""} onChange={(e) => onTrocar(e.target.value)} disabled={!itens?.length}>
-                {!item && <option value="">{curto(mes)}</option>}
-                {(itens || []).map((i) => <option key={i.id} value={i.id}>{curto(i.id)}</option>)}
-              </select>
-            </label>
+              {(() => {
+                const ids = (itens || []).map((x) => x.id).sort();
+                const i = ids.indexOf(mes);
+                const ant = i > 0 ? ids[i - 1] : null, prox = i >= 0 && i < ids.length - 1 ? ids[i + 1] : null;
+                return (
+                  <nav className="navegacao" aria-label="Escolher mês">
+                    <button type="button" className="btn-icone" onClick={() => onTrocar(ant)} disabled={!ant} aria-label="Mês anterior">‹</button>
+                    <SeletorMes meses={ids} valor={mes} onChange={onTrocar} rotulo={longo} />
+                    <button type="button" className="btn-icone" onClick={() => onTrocar(prox)} disabled={!prox} aria-label="Próximo mês">›</button>
+                  </nav>
+                );
+              })()}
+            </div>
             <button type="button" className="button button--pequeno" onClick={baixar} disabled={!item}>
               <span aria-hidden="true">↓</span> Baixar PDF
             </button>

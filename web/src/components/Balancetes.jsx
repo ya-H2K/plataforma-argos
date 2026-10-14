@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiBalancetes } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
 import VisorPdf from "./VisorPdf.jsx";
+import SeletorMes from "./SeletorMes.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 
 // Relatórios > Balancete e Razão.
@@ -167,13 +168,21 @@ function Mes({ aba, onAba, meses, erro, mes, doc, onIr, onVoltar }) {
             <p className="page-sub">FIDC Vox — {LONGOS[Number(mes.slice(5, 7)) - 1]} de {mes.slice(0, 4)}</p>
           </div>
           <div className="apr__acoes">
-            <label className="apr__campo">
+            <div className="apr__campo">
               <span>Mês</span>
-              <select value={item ? mes : ""} onChange={(e) => onIr(e.target.value, doc)} disabled={!meses?.length}>
-                {!item && <option value="">{curto(mes)}</option>}
-                {(meses || []).map((m) => <option key={m.id} value={m.id}>{curto(m.id)}</option>)}
-              </select>
-            </label>
+              {(() => {
+                const ids = (meses || []).map((x) => x.id).sort();
+                const i = ids.indexOf(mes);
+                const ant = i > 0 ? ids[i - 1] : null, prox = i >= 0 && i < ids.length - 1 ? ids[i + 1] : null;
+                return (
+                  <nav className="navegacao" aria-label="Escolher mês">
+                    <button type="button" className="btn-icone" onClick={() => onIr(ant, doc)} disabled={!ant} aria-label="Mês anterior">‹</button>
+                    <SeletorMes meses={ids} valor={mes} onChange={(m) => onIr(m, doc)} rotulo={longo} />
+                    <button type="button" className="btn-icone" onClick={() => onIr(prox, doc)} disabled={!prox} aria-label="Próximo mês">›</button>
+                  </nav>
+                );
+              })()}
+            </div>
             <button type="button" className="button button--pequeno" onClick={() => baixar("pdf")} disabled={!arqs.pdf}
               title={arqs.pdf ? arqs.pdf.nome : `${nomeDoc} sem PDF neste mês`}>
               <span aria-hidden="true">↓</span> Baixar PDF
