@@ -99,8 +99,19 @@ function lerBases(wb) {
     (v) => ({ data: isoDeValor(v.data), operacao: inteiroOuTexto(v.operacao), nome: texto(v.nome),
       valor: numero(v.valor), represada: texto(v.represada), motivo: texto(v.motivo),
       responsavel: texto(v.responsavel) }));
+  // Baixas represadas acumuladas: histórico por dia nas colunas I (Data) e J (Acumulado) da aba
+  // "Baixas Represadas" (desde 13/10/2026; antes era uma célula só, J2). Cada dia usa o seu valor.
+  const represadasAcumuladoDia = linhas(ws("Baixas Represadas"), { data: "I", valor: "J" }, "data",
+    (v) => (isoDeValor(v.data) ? { data: isoDeValor(v.data), valor: numero(v.valor) } : null))
+    .sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0));
   const represadasAcumulado = numero(bruto(ws("Baixas Represadas")?.getCell("J2")));
-  // Igual ao Dashboard!F17 do Excel: soma das células P2 (preenchidas à mão).
+  // Liquidação pendente acumulada por dia: colunas R (Data) e S (Acumulado) das abas de liquidação,
+  // gravadas pela automação (desde 14/10/2026). Sem histórico, vale a soma de P2 (como antes).
+  const histLiq = (nome) => linhas(ws(nome), { data: "R", valor: "S" }, "data",
+    (v) => (isoDeValor(v.data) ? { data: isoDeValor(v.data), valor: numero(v.valor) } : null))
+    .sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0));
+  const liquidacaoAcumuladoDia = { urfa: histLiq("Liquidação URFA"), endosso: histLiq("Liquidação Endosso") };
+  // Igual ao Dashboard!F17 do Excel: soma das células P2.
   const liquidacaoPendenteAcumulado =
     numero(bruto(ws("Liquidação URFA")?.getCell("P2"))) + numero(bruto(ws("Liquidação Endosso")?.getCell("P2")));
 
@@ -137,7 +148,7 @@ function lerBases(wb) {
 
   return {
     visaoGeral, liquidacaoUrfa: liquidacao("Liquidação URFA"), liquidacaoEndosso: liquidacao("Liquidação Endosso"),
-    baixasBauk, qiTech, aceitas, represadas, represadasAcumulado, liquidacaoPendenteAcumulado, extracaoRpe, arquivosRpe, flash, observacoes,
+    baixasBauk, qiTech, aceitas, represadas, represadasAcumulado, represadasAcumuladoDia, liquidacaoPendenteAcumulado, liquidacaoAcumuladoDia, extracaoRpe, arquivosRpe, flash, observacoes,
     desagio,
   };
 }

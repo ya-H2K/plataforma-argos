@@ -4,6 +4,7 @@ import SeletorMes from "./SeletorMes.jsx";
 import { BarraTopo } from "./Cabecalho.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, valorNum } from "../formato.js";
+import { Valor } from "./Animado.jsx";
 
 // Relatório de Despesas do fundo (Relatórios > Despesas). Dados da planilha publicada uma vez
 // por mês: { meses: ["2025-05", ...], linhas: [{ fornecedor, servico, categoria, valores }], arquivo }.
@@ -140,7 +141,7 @@ function Extrato({ linhas, mes, ant }) {
       <header className="d2-folha__topo">
         <div>
           <span className="d2-rotulo">Total do mês</span>
-          <strong className="d2-total">{brl(total)}</strong>
+          <strong className="d2-total"><Valor valor={total} /></strong>
           {totalAnt > 0 && <span className="d2-sub"><Variacao atual={total} antes={totalAnt} /> em relação a {curto(ant)}</span>}
         </div>
         {total > 0 && <Pizza grupos={grupos} total={total} />}

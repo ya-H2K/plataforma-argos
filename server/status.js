@@ -220,6 +220,26 @@ function flashReports(b, iso) {                       // Dashboard!E8
     : { ...st("nao_realizado", "Arquivo não encontrado", { rotulo: "Não processado" }), itens };
 }
 
+// Baixas represadas acumuladas do dia: a linha do histórico (aba Baixas Represadas, I:J) com essa
+// data; sem linha no dia (ex.: feriado), vale a última data anterior; antes do 1º registro, 0.
+// Planilha antiga, sem histórico: o valor único de J2.
+function valorDoDia(hist, iso) {
+  let valor = 0;
+  for (const h of hist) { if (h.data <= iso) valor = h.valor; else break; }
+  return valor;
+}
+function represadasAcumuladoDoDia(b, iso) {
+  const hist = b.represadasAcumuladoDia;
+  return hist?.length ? valorDoDia(hist, iso) : b.represadasAcumulado ?? 0;
+}
+// Liquidação pendente acumulada do dia: histórico R:S das abas URFA + Endosso (gravado pela
+// automação); mesma regra do histórico das represadas. Sem histórico, soma dos P2.
+function liquidacaoAcumuladoDoDia(b, iso) {
+  const h = b.liquidacaoAcumuladoDia;
+  if (!h || (!h.urfa?.length && !h.endosso?.length)) return b.liquidacaoPendenteAcumulado;
+  return Math.round((valorDoDia(h.urfa || [], iso) + valorDoDia(h.endosso || [], iso)) * 100) / 100;
+}
+
 // ---------- Valores (mesmas células do Dashboard do Excel) ----------
 function valores(b, iso, aberto) {
   const somaLiq = (itens, filtro) => soma(itens.filter((i) => i.data === iso && filtro(i)), "valor");
@@ -243,8 +263,8 @@ function valores(b, iso, aberto) {
     liquidacaoPendenteDia:                                          // F14
       somaLiq(b.liquidacaoUrfa, naoLiquidado) + somaLiq(b.liquidacaoEndosso, naoLiquidado),
     baixasRepresadasDia: soma(doDia(b.represadas, iso), "valor"),   // L14
-    liquidacaoPendenteAcumulado: b.liquidacaoPendenteAcumulado,     // F17 (P2 manual)
-    baixasRepresadasAcumulado: b.represadasAcumulado,               // L17 (J2)
+    liquidacaoPendenteAcumulado: liquidacaoAcumuladoDoDia(b, iso),  // F17 (histórico R:S; sem ele, P2)
+    baixasRepresadasAcumulado: represadasAcumuladoDoDia(b, iso),    // L17 (histórico I:J)
   };
 }
 

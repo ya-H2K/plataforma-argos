@@ -818,3 +818,77 @@ a.marca:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
   .home__card { min-height: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .home__card { transition: none; } .home__card:hover { transform: none; } }
+
+/* ================================================== animações sutis (14/10/2026) */
+:root { --ease-saida: cubic-bezier(.22, .8, .3, 1); }
+
+/* troca de tela: a página entra com fade e sobe alguns pixels */
+.pagina, .home { animation: vx-pagina .38s var(--ease-saida) both; }
+@keyframes vx-pagina { from { opacity: 0; transform: translateY(8px); } }
+
+/* sublinhado dourado das abas: desliza da aba anterior para a nova */
+.abas { position: relative; }
+.aba--ativa { border-bottom-color: transparent; }
+.abas__sublinhado {
+  position: absolute; height: 1px; background: var(--gold); pointer-events: none;
+  transition: left .32s var(--ease-saida), width .32s var(--ease-saida), opacity .2s;
+}
+
+/* cards em cascata: um depois do outro */
+.grade > *, .home__grade > *, .apr__grade > *, .report > section, .report > .card--quadro {
+  animation: vx-surge .45s var(--ease-saida) both;
+}
+@keyframes vx-surge { from { opacity: 0; transform: translateY(6px); } }
+.grade > :nth-child(2), .home__grade > :nth-child(2), .apr__grade > :nth-child(2) { animation-delay: 50ms; }
+.grade > :nth-child(3), .home__grade > :nth-child(3), .apr__grade > :nth-child(3) { animation-delay: 100ms; }
+.grade > :nth-child(4), .home__grade > :nth-child(4), .apr__grade > :nth-child(4) { animation-delay: 150ms; }
+.grade > :nth-child(5), .home__grade > :nth-child(5), .apr__grade > :nth-child(5) { animation-delay: 200ms; }
+.grade > :nth-child(6), .apr__grade > :nth-child(6) { animation-delay: 250ms; }
+.grade > :nth-child(7), .apr__grade > :nth-child(7) { animation-delay: 300ms; }
+.grade > :nth-child(n+8), .apr__grade > :nth-child(n+8) { animation-delay: 340ms; }
+.report > section:nth-child(2) { animation-delay: 120ms; }
+.report > section:nth-child(3) { animation-delay: 220ms; }
+.report > :nth-child(n+4) { animation-delay: 300ms; }
+
+/* card de processo: o detalhe abre deslizando e a seta gira */
+.card--processo::after { transition: transform .25s var(--ease-saida), top .25s var(--ease-saida), border-color .2s; }
+.card--processo, .relatorio-item { transition: border-color .2s, background .2s, transform .2s var(--ease-saida), box-shadow .2s; }
+.det { animation: vx-abre .32s var(--ease-saida) both; overflow: hidden; }
+@keyframes vx-abre { from { max-height: 0; opacity: 0; padding-top: 0; } to { max-height: 16rem; opacity: 1; } }
+.det__barra i { animation: vx-barra .7s var(--ease-saida) .15s both; transform-origin: left; }
+@keyframes vx-barra { from { transform: scaleX(0); } }
+.det__quadros i { animation: vx-surge .3s var(--ease-saida) both; }
+.det__quadros i:nth-child(2) { animation-delay: 40ms; } .det__quadros i:nth-child(3) { animation-delay: 80ms; }
+.det__quadros i:nth-child(4) { animation-delay: 120ms; } .det__quadros i:nth-child(5) { animation-delay: 160ms; }
+.det__quadros i:nth-child(6) { animation-delay: 200ms; }
+
+/* relatórios: o card sobe um pouco no hover */
+.relatorio-item:hover, .relatorio-item:focus-visible, .apr__card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px -14px var(--sombra); }
+.apr__card { transition: border-color .2s, background .2s, transform .2s var(--ease-saida), box-shadow .2s; }
+
+/* gráficos: linhas se desenham, barras crescem de baixo, pontos aparecem depois */
+.graf__linha[pathLength] { stroke-dasharray: 1; animation: vx-desenha 1s var(--ease-saida) .15s both; }
+@keyframes vx-desenha { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.graf__barra--entrada, .graf__barra--saida, .graf__barra--rend, .graf__barra--desagio {
+  transform-box: fill-box; transform-origin: bottom; animation: vx-cresce .7s var(--ease-saida) .1s both;
+}
+@keyframes vx-cresce { from { transform: scaleY(0); } }
+.graf__ponto { animation: vx-aparece .3s ease .8s both; }
+@keyframes vx-aparece { from { opacity: 0; } }
+
+/* valor que mudou na atualização automática: piscada dourada discreta */
+.valor--atualizado { animation: vx-piscada 1.2s ease-out; border-radius: 2px; }
+@keyframes vx-piscada { 0%, 25% { background: color-mix(in srgb, var(--gold) 22%, transparent); } 100% { background: transparent; } }
+
+/* carregando: o texto respira em vez de ficar parado */
+.vazio[role="status"] { animation: vx-respira 1.6s ease-in-out infinite; }
+@keyframes vx-respira { 50% { opacity: .45; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pagina, .home, .grade > *, .home__grade > *, .apr__grade > *, .report > *, .det, .det__barra i, .det__quadros i,
+  .graf__linha[pathLength], .graf__barra--entrada, .graf__barra--saida, .graf__barra--rend, .graf__barra--desagio,
+  .graf__ponto, .valor--atualizado, .vazio[role="status"] { animation: none; }
+  .abas__sublinhado, .card--processo, .relatorio-item, .apr__card, .card--processo::after { transition: none; }
+  .graf__linha[pathLength] { stroke-dasharray: none; }
+  .relatorio-item:hover, .apr__card:hover { transform: none; }
+}

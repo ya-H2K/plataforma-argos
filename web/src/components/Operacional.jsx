@@ -203,7 +203,7 @@ export default function Operacional({ aba, onAba }) {
             )}
             {admin && vista === "horarios"
               ? <Horarios dia={diaAtual} />
-              : <Report dia={diaAtual} mostrarResponsavel={meta?.mostrarResponsavel !== false} />}
+              : <Report key={diaAtual.data} dia={diaAtual} mostrarResponsavel={meta?.mostrarResponsavel !== false} />}
           </>
         )}
       </div>

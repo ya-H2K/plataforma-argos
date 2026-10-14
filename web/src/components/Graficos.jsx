@@ -143,7 +143,7 @@ export function GraficoSaldo({ linhas, selecionada, onSelecionar }) {
             <EixoX itens={pontos} xDe={x} largura={w} selecionada={selecionada} />
             {ks >= 0 && <rect x={x(ks) - 14} y={M.top} width={28} height={base - M.top} className="graf__faixa-sel" />}
             <path d={area} fill="url(#grad-saldo)" />
-            <path d={linha} fill="none" className="graf__linha" />
+            <path d={linha} fill="none" className="graf__linha" pathLength={1} />
             {pontos.map((pt, i) => (
               <circle key={pt.data} cx={x(i)} cy={y(pt.saldoCaixaTotal)} r={perto === i ? 4.5 : 2.5}
                 className={`graf__ponto${perto === i ? " graf__ponto--ativo" : ""}`} />
@@ -309,7 +309,7 @@ export function GraficoEnquadramento({ linhas, selecionada, onSelecionar }) {
             </text>
             <EixoX itens={dias} xDe={x} largura={w} selecionada={selecionada} />
             <path d={area} fill="url(#grad-enq)" />
-            <path d={linha} fill="none" className="graf__linha" />
+            <path d={linha} fill="none" className="graf__linha" pathLength={1} />
             {dias.map((dd, i) => (
               <circle key={dd.data} cx={x(i)} cy={y(dd.enquadramento)} r={ativo === i ? 4.5 : 2.5}
                 className={`graf__ponto${ativo === i ? " graf__ponto--ativo" : ""}`} />

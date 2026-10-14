@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Carimbo from "./Carimbo.jsx";
-import { brl } from "../formato.js";
+import { Valor } from "./Animado.jsx";
 
 // Mesmo conteúdo e mesma ordem do "Dashboard Operacional" da planilha.
 
@@ -100,7 +100,7 @@ function CardValor({ rotulo, valor }) {
   return (
     <div className="card">
       <span className="card__rotulo">{rotulo}</span>
-      <span className="card__valor">{brl(valor)}</span>
+      <Valor className="card__valor" valor={valor} />
     </div>
   );
 }
@@ -111,12 +111,12 @@ function CardResumo({ rotulo, valor, aguardando, linhas }) {
       <span className="card__rotulo">{rotulo}</span>
       {aguardando
         ? <span className="card__valor card__valor--grande card__valor--aguardando">Aguardando...</span>
-        : <span className="card__valor card__valor--grande">{brl(valor)}</span>}
+        : <Valor className="card__valor card__valor--grande" valor={valor} />}
       <dl className="card__linhas">
         {linhas.map(([nome, v]) => (
           <div key={nome}>
             <dt>{nome}</dt>
-            <dd>{brl(v)}</dd>
+            <dd><Valor valor={v} /></dd>
           </div>
         ))}
       </dl>

@@ -5,6 +5,7 @@ import SeletorMes from "./SeletorMes.jsx";
 import { GraficoSaldo, GraficoEntradasSaidas, GraficoEnquadramento, GraficoRendimento } from "./Graficos.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, curta, pct, valorNum } from "../formato.js";
+import { Valor } from "./Animado.jsx";
 
 const dataHora = (iso) => {
   const d = new Date(iso);
@@ -47,7 +48,7 @@ function Indicador({ rotulo, valor, legenda, legendaDireita, destaque = false, n
   return (
     <div className={`card card--indicador${destaque ? " card--fechamento" : ""}`}>
       <span className="card__rotulo">{rotulo}</span>
-      <span className={`card__valor${negativo ? " card__valor--negativo" : ""}`}>{brl(valor)}</span>
+      <Valor className={`card__valor${negativo ? " card__valor--negativo" : ""}`} valor={valor} />
       {(legenda || legendaDireita) && (
         <span className="card__legendas">
           <span className="card__legenda">{legenda}</span>

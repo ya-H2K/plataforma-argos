@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSublinhado } from "./Animado.jsx";
 import { ano, diaMes, diaSemana } from "../formato.js";
 import { apiAdmin } from "../api.js";
 import Ajustes from "./Ajustes.jsx";
@@ -34,6 +35,8 @@ export function BarraTopo({ aba, onAba, children, semAbas = false }) {
   const { usuario } = useSessao();
   const abas = ABAS.filter((a) => !a.soAdmin || usuario?.admin);
   const pendentes = usePendentes(usuario?.admin);
+  const navRef = useRef(null);
+  const sublinhado = useSublinhado(navRef, semAbas ? null : aba);
   return (
     <header className="topbar">
       <div className="topbar__esquerda">
@@ -42,7 +45,7 @@ export function BarraTopo({ aba, onAba, children, semAbas = false }) {
           <LogoH2 />
           <span className="brand">Vox FIDC</span>
         </a>
-        {!semAbas && <nav className="abas" aria-label="Telas do site">
+        {!semAbas && <nav className="abas" aria-label="Telas do site" ref={navRef}>
           {abas.map((a) => (
             <a key={a.id} href={a.href}
               className={`aba${aba === a.id ? " aba--ativa" : ""}`}
@@ -52,6 +55,7 @@ export function BarraTopo({ aba, onAba, children, semAbas = false }) {
               {a.id === "usuarios" && pendentes > 0 && <span className="aba__contador" title="Solicitações pendentes">{pendentes}</span>}
             </a>
           ))}
+          <span className="abas__sublinhado" style={sublinhado} aria-hidden="true" />
         </nav>}
       </div>
       <div className="topbar__direita">
