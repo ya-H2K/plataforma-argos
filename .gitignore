@@ -15,3 +15,5 @@ publicador/.horarios-etapas.json
 
 # imagens de apoio geradas nas conversas (não vão para o site)
 Claude outputs/
+publicador/.emails-acesso.json
+publicador/email/previa.html

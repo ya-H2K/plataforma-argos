@@ -37,11 +37,15 @@ function informacaoDoDia(b, iso, arquivosFechados = true) {
   // Liquidação: com operação no dia, só é definitiva quando o extrato confirma a saída
   // (coluna H = Sim). Até lá, com o dia em andamento, fica "Aguardando".
   // Sem operação no dia, "Sem URFA"/"Sem endosso" vale assim que a Bauk do dia chegou.
-  const liquidacao = (base) => {
+  const liquidacao = (base, fechado = arquivosFechados) => {
     const linhas = doDia(base, iso);
     const temOperacao = linhas.some((i) => i.operacao !== "");
-    return temOperacao ? false : arquivosFechados && (linhas.length > 0 || bauk);
+    return temOperacao ? false : fechado && (linhas.length > 0 || bauk);
   };
+  // A URFA sempre chega antes do endosso, e o endosso marca o fim do processamento da Bauk:
+  // com o endosso do dia já recebido, "Sem URFA" vale na hora, sem esperar o horário limite.
+  const endossoChegou = doDia(b.liquidacaoEndosso, iso).some((i) => i.operacao !== "")
+    || doDia(b.visaoGeral, iso).some((i) => ehEndosso(i) > 0);
   return {
     // RPE: os arquivos chegam ao longo do dia; até o horário limite (14h), o que não
     // estiver completo fica "Aguardando". Depois, vale o resultado da planilha.
@@ -49,7 +53,7 @@ function informacaoDoDia(b, iso, arquivosFechados = true) {
     // Bauk e Baixas: até o limite dos arquivos, o que não estiver OK fica "Aguardando".
     // Depois, vale o resultado da planilha (mesmo esquema da Extração RPE).
     bauk: false,
-    urfa: liquidacao(b.liquidacaoUrfa),
+    urfa: liquidacao(b.liquidacaoUrfa, arquivosFechados || endossoChegou),
     endosso: liquidacao(b.liquidacaoEndosso),
     baixas: false,
     arquivosRpe: tem(b.arquivosRpe),

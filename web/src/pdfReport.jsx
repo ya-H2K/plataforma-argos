@@ -4,9 +4,10 @@
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import logoH2 from "./assets/h2-kapital.svg";
+import olhoArgos from "./assets/argos-olho-pdf.png";
+import voxFidc from "./assets/vox-fidc-pdf.png";
 import { brl, diaMes, diaSemana, ano } from "./formato.js";
 
-const VOX = "M2.10 2.00 L10.60 2.00 L22.50 28.40 L35.20 2.00 L43.60 2.00 L25.40 38.10 L19.60 38.10 Z M44.20 19.90 a21.6 18.0 0 1 0 43.2 0 a21.6 18.0 0 1 0 -43.2 0 Z M52.00 19.90 a13.9 10.9 0 1 0 27.8 0 a13.9 10.9 0 1 0 -27.8 0 Z M88.50 2.00 L97.50 2.00 L107.00 14.20 L116.50 2.00 L125.50 2.00 L111.50 19.95 L125.70 38.10 L116.70 38.10 L107.00 25.80 L97.30 38.10 L88.30 38.10 L102.50 19.95 Z";
 
 const COR = { ok: "#3d7a32", parcial: "#4a6a8c", nao_realizado: "#b0473a", aguardando: "#9a6f12", sem_movimento: "#6f6656" };
 const COR_SITUACAO = { concluido: COR.ok, andamento: COR.aguardando, encerrado: COR.nao_realizado };
@@ -49,12 +50,12 @@ function PaginaPdf({ dia, mostrarResponsavel, nomesArquivos, geradoEm, logo }) {
   return (
     <div className="pdf">
       <div className="pdf-topo">
-        <div className="pdf-marca"><img src={logo} alt="" /><span>Vox FIDC</span></div>
-        <svg viewBox="1.2 1.2 125.2 37.6" className="pdf-vox"><path d={VOX} fill="none" stroke="#ece5d8" strokeWidth="1.3" vectorEffect="non-scaling-stroke" /></svg>
+        <div className="pdf-marca"><img src={logo} alt="" /><i /><img className="pdf-olho" src={olhoArgos} alt="" /><span>Argos</span></div>
+        <img className="pdf-vox" src={voxFidc} alt="Vox FIDC" />
       </div>
       <div className="pdf-corpo">
         <div className="pdf-cab">
-          <div><h1>Report Operacional</h1><p>{diaSemana(dia.data)}, {diaMes(dia.data)} de {ano(dia.data)}</p></div>
+          <div><small className="pdf-sobre">Vox FIDC · Reports diários</small><h1>Report Operacional</h1><p>{diaSemana(dia.data)}, {diaMes(dia.data)} de {ano(dia.data)}</p></div>
           <div className="pdf-situ">
             {situ && <b style={{ color: COR_SITUACAO[situ.estado] || COR.ok }}><i />{situ.rotulo}</b>}
             <small>{dia.aberto ? `Posição de ${dataHora(geradoEm)}` : "Posição final do dia"}</small>
@@ -129,7 +130,7 @@ function PaginaPdf({ dia, mostrarResponsavel, nomesArquivos, geradoEm, logo }) {
         )}
       </div>
       <div className="pdf-rodape">
-        <span>H2 Kapital · Vox FIDC · Report Operacional · uso interno</span>
+        <span>H2 Kapital · Plataforma Argos · Vox FIDC · uso interno</span>
         <span>Gerado em {dataHora(geradoEm)}</span>
       </div>
     </div>
@@ -140,10 +141,13 @@ const CSS = `
 .pdf{width:794px;min-height:1123px;display:flex;flex-direction:column;background:#fff;color:#1f1b14;
   font:400 14px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif;text-align:left}
 .pdf *{box-sizing:border-box}
-.pdf-topo{background:#0b0a08;display:flex;align-items:center;justify-content:space-between;padding:26px 53px;border-bottom:2px solid #a8812f}
-.pdf-marca{display:flex;align-items:center;gap:13px}.pdf-marca img{height:42px;width:auto;display:block}
-.pdf-marca span{color:#c9a35c;font-size:22px;font-weight:600;letter-spacing:.14em}
-.pdf-vox{height:16px;width:54px;display:block}
+.pdf-topo{background:#fff;display:flex;align-items:center;justify-content:space-between;margin:0 53px;padding:34px 0 18px;border-bottom:2px solid #a8812f}
+.pdf-marca{display:flex;align-items:center;gap:13px}.pdf-marca img{height:46px;width:auto;display:block}
+.pdf-marca i{width:1px;height:34px;background:#e3dccd;display:block}
+.pdf-marca img.pdf-olho{height:26px;width:26px}
+.pdf-marca span{color:#a8812f;font-size:19px;font-weight:600;letter-spacing:.32em;text-transform:uppercase}
+.pdf-vox{height:42px;width:auto;display:block}
+.pdf-sobre{display:block;color:#a8812f;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px}
 .pdf-corpo{padding:30px 53px 0;display:flex;flex-direction:column;gap:22px}
 .pdf-cab{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #e3dccd;padding-bottom:15px}
 .pdf-cab h1{margin:0;font-size:28px;font-weight:600;line-height:1.2}.pdf-cab p{margin:4px 0 0;color:#6f6656;font-size:16px}
@@ -186,8 +190,8 @@ const esperarImagens = (el) => Promise.all([...el.querySelectorAll("img")].map((
   img.complete ? null : new Promise((ok) => { img.onload = ok; img.onerror = ok; })));
 
 function salvar(pdf, dia) {
-  pdf.setProperties({ title: `Report Operacional Vox - ${dia.data}`, author: "H2 Kapital" });
-  pdf.save(`Report Operacional Vox - ${dia.data.split("-").reverse().join("-")}.pdf`);
+  pdf.setProperties({ title: `Argos - Report Operacional - ${dia.data}`, author: "H2 Kapital" });
+  pdf.save(`Argos - Report Operacional - ${dia.data.split("-").reverse().join("-")}.pdf`);
 }
 
 export async function baixarPdfReport(dia, { mostrarResponsavel = true, nomesArquivos = false } = {}) {

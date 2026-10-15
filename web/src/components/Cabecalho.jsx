@@ -4,12 +4,12 @@ import { ano, diaMes, diaSemana } from "../formato.js";
 import { apiAdmin } from "../api.js";
 import Ajustes from "./Ajustes.jsx";
 import { useSessao } from "../sessao.js";
-import { LogoH2, LogoVox } from "./Logos.jsx";
+import { LogoH2, LogoVoxFidc, MarcaArgos } from "./Logos.jsx";
 
 const hhmm = (d) => (d ? new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(d) : "");
 
 const ABAS = [
-  { id: "operacional", nome: "Fluxo Operacional", href: "#/report" },
+  { id: "operacional", nome: "Report Operacional", href: "#/report" },
   { id: "caixa", nome: "Fluxo de Caixa", href: "#/caixa" },
   { id: "relatorios", nome: "Relatórios", href: "#/relatorios" },
   { id: "usuarios", nome: "Usuários", href: "#/usuarios", soAdmin: true },
@@ -29,8 +29,9 @@ function usePendentes(ativo) {
   return n;
 }
 
-// Barra superior: marca, abas do site e, à direita, a navegação da aba aberta.
-// No início (home) as abas não aparecem no topo: ficam em destaque no meio da página.
+// Barra superior (Plataforma Argos): H2 Kapital + Argos, abas do site e, à direita, a navegação
+// da aba aberta e a marca do Vox FIDC. No início (home) as abas e a marca do fundo não aparecem
+// no topo: a marca do Vox FIDC fica em destaque no meio da página.
 export function BarraTopo({ aba, onAba, children, semAbas = false }) {
   const { usuario } = useSessao();
   const abas = ABAS.filter((a) => !a.soAdmin || usuario?.admin);
@@ -43,7 +44,8 @@ export function BarraTopo({ aba, onAba, children, semAbas = false }) {
         <a className="marca" href="#/" title="Ir para o início"
           onClick={(e) => { e.preventDefault(); onAba("home"); }}>
           <LogoH2 />
-          <span className="brand">Vox FIDC</span>
+          <span className="marca__divisor" aria-hidden="true" />
+          <MarcaArgos />
         </a>
         {!semAbas && <nav className="abas" aria-label="Telas do site" ref={navRef}>
           {abas.map((a) => (
@@ -61,7 +63,7 @@ export function BarraTopo({ aba, onAba, children, semAbas = false }) {
       <div className="topbar__direita">
         {children}
         <Ajustes />
-        <span className="topbar__parceiro" title="Vox"><LogoVox /></span>
+        {!semAbas && <span className="topbar__fundo" title="Vox FIDC"><LogoVoxFidc /></span>}
       </div>
     </header>
   );

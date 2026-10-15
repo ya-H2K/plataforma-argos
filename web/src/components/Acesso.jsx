@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { apiAuth } from "../api.js";
-import { LogoH2, LogoVox } from "./Logos.jsx";
+import { LogoH2, LogoVoxFidc, OlhoArgos } from "./Logos.jsx";
 
 // Regras da senha (as mesmas do servidor).
 const regras = (s) => [
@@ -75,17 +75,23 @@ export default function Acesso({ onEntrar }) {
   });
 
   return (
-    <div className="acesso">
-      <div className="acesso__card">
-        <div className="acesso__marca">
-          <div className="acesso__logos">
-            <LogoH2 />
-            <span className="acesso__divisor" aria-hidden="true" />
-            <LogoVox />
-          </div>
-          <span className="brand">Vox FIDC</span>
-          <span className="acesso__sub">Report Operacional</span>
+    <div className="acesso acesso--argos">
+      {/* lado esquerdo: H2 Kapital + Vox FIDC, e a apresentação da Plataforma Argos */}
+      <aside className="acesso__lado">
+        <OlhoArgos className="acesso__olho-fundo" pontos={false} />
+        <div className="acesso__logos">
+          <LogoH2 />
+          <span className="acesso__divisor" aria-hidden="true" />
+          <LogoVoxFidc />
         </div>
+        <div className="acesso__apresenta">
+          <OlhoArgos />
+          <p className="acesso__argos">Argos</p>
+          <p className="acesso__frase">Plataforma de acompanhamento do <b>Vox FIDC</b>: operação do dia, fluxo de caixa e relatórios do fundo.</p>
+        </div>
+        <span className="acesso__rodape">H2 Kapital</span>
+      </aside>
+      <div className="acesso__card">
 
         {etapa === "entrar" && (
           <form onSubmit={entrar} className="acesso__form">

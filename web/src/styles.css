@@ -892,3 +892,62 @@ a.marca:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
   .graf__linha[pathLength] { stroke-dasharray: none; }
   .relatorio-item:hover, .apr__card:hover { transform: none; }
 }
+
+/* ================================================== Plataforma Argos (15/10/2026) */
+/* marca da plataforma: olho + ARGOS; marca do fundo: VOX FIDC (variação C) */
+.olho-argos { display: block; flex: none; width: 1.85rem; height: 1.85rem; color: var(--gold); }
+.marca-argos { display: inline-flex; align-items: center; gap: .6rem; color: var(--gold); }
+.marca-argos__nome { font-size: 1.25rem; font-weight: 600; letter-spacing: .32em; text-transform: uppercase; margin-right: -.32em; }
+.marca__divisor { width: 1px; height: 2.1rem; background: var(--line); }
+.marca { gap: .9rem; }
+.logo-vox-fidc { display: block; height: 2.5rem; width: auto; color: var(--text); overflow: visible; }
+.logo-vox-fidc__fidc { color: var(--gold); }
+.topbar__fundo { display: flex; align-items: center; padding-left: 1.2rem; margin-left: .2rem; border-left: 1px solid var(--line); }
+.topbar__direita { margin-left: auto; justify-content: flex-end; }
+@media (max-width: 900px) { .topbar__fundo .logo-vox-fidc { height: 2.1rem; } }
+@media (max-width: 560px) {
+  .marca-argos__nome { font-size: 1.05rem; letter-spacing: .24em; }
+  .olho-argos { width: 1.5rem; height: 1.5rem; }
+  .topbar__fundo { display: none; }
+}
+
+/* início: marca do Vox FIDC no centro; saudação à esquerda e data à direita */
+.home__fundo { display: grid; justify-items: center; gap: .8rem; margin-bottom: 3.2rem; text-align: center; }
+.home__fundo .logo-vox-fidc { height: 4.1rem; }
+.home__fundo-legenda { color: var(--text-dim); font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; }
+.home__cabeca { display: flex; justify-content: space-between; align-items: flex-end; gap: .5rem 1.5rem; flex-wrap: wrap; margin-bottom: 1.9rem; }
+.home__cabeca .home__titulo { margin: 0 0 .25rem; }
+.home__cabeca .home__sub { margin: 0; }
+.home__cabeca .home__data { padding-bottom: .2rem; }
+.home__nome { margin-bottom: .15rem; }
+.home__subtitulo { margin-bottom: .6rem; color: var(--text-dim); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; }
+@media (max-width: 560px) { .home__fundo .logo-vox-fidc { height: 3.2rem; } .home__fundo { margin-bottom: 2.2rem; } }
+
+/* login da Plataforma Argos: tela dividida (apresentação à esquerda, formulário à direita) */
+.acesso--argos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; padding: 0; }
+.acesso__lado {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 3rem;
+  padding: 3rem 3.5rem; background: var(--surface); border-right: 1px solid var(--line);
+}
+.acesso__olho-fundo { position: absolute; right: -6rem; bottom: -4rem; width: 32rem; height: 32rem; opacity: .07; pointer-events: none; }
+.acesso--argos .acesso__logos { position: relative; gap: 1.25rem; margin: 0; }
+.acesso--argos .acesso__logos .logo-h2 { height: 3.9rem; }
+.acesso--argos .acesso__logos .logo-vox-fidc { height: 3rem; }
+.acesso--argos .acesso__divisor { margin: .3rem 0; }
+.acesso__apresenta { position: relative; }
+.acesso__apresenta .olho-argos { width: 3.4rem; height: 3.4rem; }
+.acesso__argos { margin: 1.1rem 0 0; color: var(--gold); font-size: 3.4rem; font-weight: 600; line-height: 1.1; letter-spacing: .3em; text-transform: uppercase; }
+.acesso__frase { margin: 1rem 0 0; max-width: 24rem; color: var(--text-dim); font-size: 1rem; line-height: 1.6; }
+.acesso__frase b { color: var(--text); font-weight: 600; }
+.acesso__rodape { position: relative; color: var(--text-dim); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; }
+.acesso--argos .acesso__card {
+  align-self: center; justify-self: center; width: min(100% - 2rem, 25rem);
+  background: none; border: 0; padding: 2rem 0;
+}
+@media (max-width: 860px) {
+  .acesso--argos { grid-template-columns: 1fr; }
+  .acesso__lado { padding: 2rem 1.5rem; gap: 1.75rem; border-right: 0; border-bottom: 1px solid var(--line); }
+  .acesso__argos { font-size: 2.3rem; }
+  .acesso__olho-fundo { width: 18rem; height: 18rem; right: -4rem; bottom: -5rem; }
+  .acesso__rodape { display: none; }
+}

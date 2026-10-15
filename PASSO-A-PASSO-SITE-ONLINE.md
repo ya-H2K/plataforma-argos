@@ -60,7 +60,7 @@ Deixe esta página aberta, porque você vai copiar daqui na Parte 6.
 
 ## Parte 5: avisar o GitHub que o site é publicado pelo "Actions" (1 min)
 
-1. Abra **https://github.com/ya-H2K/report-diario-vox-fidc/settings/pages**
+1. Abra **https://github.com/ya-H2K/plataforma-argos/settings/pages**
 2. Em **Build and deployment** → **Source**, escolha **GitHub Actions**.
 3. Pronto, não precisa salvar nada (muda na hora).
 
@@ -100,9 +100,9 @@ O publicador é quem manda os dados da planilha para o site sempre que ela é sa
 ## Parte 8: testar 🎉
 
 1. Espere uns 3 minutos depois da Parte 6 (é o tempo do GitHub montar o site).
-   Para acompanhar: **https://github.com/ya-H2K/report-diario-vox-fidc/actions**.
+   Para acompanhar: **https://github.com/ya-H2K/plataforma-argos/actions**.
    Bolinha amarela = montando; ✅ verde = pronto.
-2. Abra **https://ya-h2k.github.io/report-diario-vox-fidc/**
+2. Abra **https://ya-h2k.github.io/plataforma-argos/**
 3. Entre com o **e-mail e a senha do admin** da Parte 6.
 4. Confira o fluxo operacional, o fluxo de caixa (inclusive o botão **Baixar planilha**) e a aba **Usuários**.
 

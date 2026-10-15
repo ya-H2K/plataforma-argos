@@ -19,6 +19,7 @@ import { listarLaminas } from "../server/laminas.js";
 import { arquivoPublicado, lerDespesas } from "../server/despesas.js";
 import { conectar, gravarChaves, apagarChaves, enviarArquivo } from "./nuvem.js";
 import { statusDoDia } from "./bauk.js";
+import { avisarAprovados } from "./emails.js";
 import { faseBauk, isoLocal, prepararBases, montarDia } from "../server/status.js";
 
 const PASTA = path.dirname(fileURLToPath(import.meta.url));
@@ -368,8 +369,17 @@ async function vigiar() {
 
   let ultima = null;
   let falhas = 0;
+  let sbEmail = null, falhasEmail = 0;
   for (;;) {
     await atualizarBauk();
+    // e-mail de "acesso liberado" para quem o admin aprovou no site (Outlook deste PC)
+    try {
+      sbEmail ??= conectar();
+      await avisarAprovados(sbEmail, { log, aviso });
+      falhasEmail = 0;
+    } catch (e) {
+      if (falhasEmail++ === 0) aviso(`E-mails de acesso: não consegui conferir as aprovações (${e.message}).`);
+    }
     try { observarEtapas((await obterBases(config.planilha)).bases); } catch { /* planilha indisponível agora */ }
     const atual = await assinatura();
     if (atual !== ultima) {

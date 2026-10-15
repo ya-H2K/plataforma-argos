@@ -47,7 +47,7 @@ e abra **http://localhost:3001**.
 
 ## Site online (GitHub Pages + Supabase)
 
-O site fica em **https://ya-h2k.github.io/report-diario-vox-fidc/** e não depende do PC
+O site fica em **https://ya-h2k.github.io/plataforma-argos/** e não depende do PC
 ligado para abrir. O passo a passo da primeira configuração está em
 `PASSO-A-PASSO-SITE-ONLINE.md`.
 

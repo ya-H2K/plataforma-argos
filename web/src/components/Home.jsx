@@ -3,6 +3,7 @@ import { api, apiAdmin, apiCaixa } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
 import { RELATORIOS } from "./Relatorios.jsx";
 import { useSessao } from "../sessao.js";
+import { LogoVoxFidc } from "./Logos.jsx";
 
 // Início (#/): aparece logo depois do login e ao clicar na marca no topo.
 // As telas do site ficam em destaque no meio; cada card mostra uma informação real
@@ -45,19 +46,19 @@ export default function Home({ aba, onAba }) {
 
   const cards = [
     {
-      id: "operacional", titulo: "Report Operacional",
+      id: "operacional", titulo: "Report Operacional", subtitulo: "Reports diários",
       texto: "Fluxo operacional do dia: processamento, liquidações, baixas e observações.",
       rodape: situacao?.rotulo
         ? <span className={`home__estado estado--${situacao.estado}`}><span className="ponto" aria-hidden="true" />{situacao.hoje ? `Hoje: ${situacao.rotulo.toLowerCase()}` : situacao.rotulo}</span>
         : <span className="home__info">Situação do dia</span>,
     },
     {
-      id: "caixa", titulo: "Fluxo de Caixa",
+      id: "caixa", titulo: "Fluxo de Caixa", subtitulo: "Mês a mês",
       texto: "Saldo, entradas e saídas, enquadramento e movimentação diária do mês.",
       rodape: <span className="home__info">{ultimoMes ? `Último mês: ${mesCurto(ultimoMes)}` : "Mês a mês"}</span>,
     },
     {
-      id: "relatorios", titulo: "Relatórios",
+      id: "relatorios", titulo: "Relatórios", subtitulo: "Documentos do fundo",
       texto: "Apresentação de resultados, balancete, deságio, despesas e lâmina.",
       rodape: <span className="home__info">{RELATORIOS.length} relatórios</span>,
     },
@@ -67,9 +68,17 @@ export default function Home({ aba, onAba }) {
     <>
       <BarraTopo aba={aba} onAba={onAba} semAbas />
       <div className="home">
-        <p className="home__data">{dataExtenso()}</p>
-        <h1 className="home__titulo">{saudacao()}{nome && <>, <b>{nome}</b></>}</h1>
-        <p className="home__sub">Escolha por onde começar.</p>
+        <div className="home__fundo">
+          <LogoVoxFidc />
+          <span className="home__fundo-legenda">Fundo de Investimento em Direitos Creditórios</span>
+        </div>
+        <div className="home__cabeca">
+          <div>
+            <h1 className="home__titulo">{saudacao()}{nome && <>, <b>{nome}</b></>}</h1>
+            <p className="home__sub">Escolha por onde começar.</p>
+          </div>
+          <p className="home__data">{dataExtenso()}</p>
+        </div>
 
         <nav className={`home__grade home__grade--${cards.length}`} aria-label="Telas do site">
           {cards.map((c) => (
@@ -80,6 +89,7 @@ export default function Home({ aba, onAba }) {
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4">{ICONES[c.id]}</svg>
               </span>
               <span className="home__nome">{c.titulo}</span>
+              <span className="home__subtitulo">{c.subtitulo}</span>
               <span className="home__texto">{c.texto}</span>
               <span className="home__rodape">{c.rodape}<span className="home__abrir">Abrir →</span></span>
             </a>
