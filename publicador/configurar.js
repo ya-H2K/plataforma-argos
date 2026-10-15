@@ -55,7 +55,7 @@ async function perguntar(chave, pergunta, validar, { mostrarAtual = true } = {})
   }
 }
 
-const senhaValida = (s) => s.length >= 8 && /\d/.test(s) && /[^A-Za-z0-9\s]/.test(s);
+const senhaValida = (s) => s.length >= 8 && /[A-Z]/.test(s) && /[a-z]/.test(s) && /\d/.test(s) && /[^A-Za-z0-9\s]/.test(s);
 
 titulo("1. Chaves do Supabase");
 const url = await perguntar("SUPABASE_URL", "Cole a Project URL (algo como https://abcdefgh.supabase.co):", (v) => {

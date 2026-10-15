@@ -5,6 +5,7 @@ import { LogoH2, LogoVoxFidc, OlhoArgos } from "./Logos.jsx";
 // Regras da senha (as mesmas do servidor).
 const regras = (s) => [
   ["Pelo menos 8 caracteres", s.length >= 8],
+  ["Letras maiúsculas e minúsculas", /[A-Z]/.test(s) && /[a-z]/.test(s)],
   ["1 número", /\d/.test(s)],
   ["1 caractere especial (!@#$%…)", /[^A-Za-z0-9\s]/.test(s)],
 ];

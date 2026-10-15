@@ -229,8 +229,8 @@ export const apiBalancetes = {
 
 // ---------------------------------------------------------------- login
 
-const regrasOk = (s) => s.length >= 8 && /\d/.test(s) && /[^A-Za-z0-9\s]/.test(s);
-const MSG_SENHA = "A senha precisa ter pelo menos 8 caracteres, 1 número e 1 caractere especial.";
+const regrasOk = (s) => s.length >= 8 && /[A-Z]/.test(s) && /[a-z]/.test(s) && /\d/.test(s) && /[^A-Za-z0-9\s]/.test(s);
+const MSG_SENHA = "A senha precisa ter pelo menos 8 caracteres, letras maiúsculas e minúsculas, 1 número e 1 caractere especial.";
 
 function cpfValido(cpf) {
   const d = String(cpf || "").replace(/\D/g, "");

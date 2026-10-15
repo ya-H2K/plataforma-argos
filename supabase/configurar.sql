@@ -70,7 +70,7 @@ end $$;
 
 create or replace function public._senha_valida(s text) returns boolean
 language sql immutable as $$
-  select length(coalesce(s, '')) >= 8 and s ~ '\d' and s ~ '[^A-Za-z0-9[:space:]]'
+  select length(coalesce(s, '')) >= 8 and s ~ '[A-Z]' and s ~ '[a-z]' and s ~ '\d' and s ~ '[^A-Za-z0-9[:space:]]'
 $$;
 
 -- Antes de criar um login: só domínios permitidos.
@@ -181,7 +181,7 @@ language plpgsql security definer set search_path = public, extensions as $$
 declare p public.perfis;
 begin
   if not public._senha_valida(p_senha) then
-    raise exception 'VOX_SENHA: a senha precisa ter pelo menos 8 caracteres, 1 número e 1 caractere especial.';
+    raise exception 'VOX_SENHA: a senha precisa ter pelo menos 8 caracteres, letras maiúsculas e minúsculas, 1 número e 1 caractere especial.';
   end if;
   select * into p from public.perfis where email = lower(btrim(p_email));
   if not found then return; end if;
