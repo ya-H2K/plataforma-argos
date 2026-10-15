@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Carimbo from "./Carimbo.jsx";
+import { useSessao } from "../sessao.js";
 import { Valor } from "./Animado.jsx";
 
 // Mesmo conteúdo e mesma ordem do "Dashboard Operacional" da planilha.
@@ -17,15 +18,16 @@ const plural = (n, um, varios) => (n === 1 ? um : varios);
 
 // O que aparece dentro do card ao clicar: quantidades, sem nomes de arquivos.
 function Detalhe({ id, d }) {
+  const admin = !!useSessao()?.usuario?.admin;     // nomes dos arquivos da RPE: só o admin vê
   if (!d) return null;
   if (id === "rpe") {
     return (
       <>
         <div className="det__quadros" aria-hidden="true">
-          {d.arquivos.map((a) => <i key={a.tipo} className={a.recebido ? "on" : "falta"} title={a.tipo} />)}
+          {d.arquivos.map((a) => <i key={a.tipo} className={a.recebido ? "on" : "falta"} title={admin ? a.tipo : undefined} />)}
         </div>
         <span className="det__principal"><b>{d.recebidos} de {d.total}</b> arquivos recebidos</span>
-        {d.faltando.length > 0 && <span className="det__nota">Faltam: {d.faltando.join(", ")}</span>}
+        {admin && d.faltando.length > 0 && <span className="det__nota">Faltam: {d.faltando.join(", ")}</span>}
       </>
     );
   }

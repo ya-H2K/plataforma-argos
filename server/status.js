@@ -202,12 +202,21 @@ function baixas(b, iso) {
 }
 
 // ---------- Controles ----------
-function arquivosRpe(b, iso) {                        // Dashboard!A8
+function arquivosRpe(b, iso, aberto = false) {                        // Dashboard!A8
   const itens = doDia(b.arquivosRpe, iso);
   const corretos = soma(itens, "corretos");
   const incorretos = soma(itens, "incorretos");
   if (!itens.length) return { ...st("nao_realizado", "Nenhum arquivo conferido", { rotulo: "Sem arquivos" }), itens };
-  if (corretos === 6) return { ...st("ok", "6 de 6 arquivos conferidos", { rotulo: "Corretos" }), itens };
+  if (corretos === 6) {
+    // Só fica OK quando a Extração RPE também está completa (os 6 arquivos recebidos);
+    // antes disso o card ficaria "Corretos" com a RPE ainda incompleta.
+    const rpe = extracaoRpe(b, iso);
+    if (rpe.status !== "ok") {
+      return { ...st(aberto ? "aguardando" : rpe.status, `Aguardando a Extração RPE (${rpe.detalhe})`,
+        { rotulo: aberto ? ROTULOS.aguardando : "RPE incompleta" }), itens, esperaRpe: true };
+    }
+    return { ...st("ok", "6 de 6 arquivos conferidos", { rotulo: "Corretos" }), itens };
+  }
   if (corretos === 0) return { ...st("nao_realizado", "Nenhum arquivo correto", { rotulo: "Incorretos" }), itens };
   return { ...st("parcial", `${corretos} de 6 arquivos corretos`, { rotulo: `${incorretos} incorreto(s)` }), itens };
 }
@@ -431,7 +440,7 @@ export function montarDia(b, iso, { agora, horaFechamento, horaEncerramento = "1
     temDados,
     processos,
     arquivos: [
-      resumo("arquivosRpe", "Informação dos Arquivos", aplicarAberto(arquivosRpe(b, iso), aberto, info.arquivosRpe)),
+      resumo("arquivosRpe", "Informação dos Arquivos", aplicarAberto(arquivosRpe(b, iso, aberto), aberto, info.arquivosRpe)),
       resumo("flash", "Flash Reports + BKs", aplicarAberto(flashReports(b, iso), flashAberto, info.flash)),
     ],
     valores: valores(b, iso, aberto),

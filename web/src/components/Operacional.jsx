@@ -154,7 +154,7 @@ export default function Operacional({ aba, onAba }) {
   const baixarPdf = async () => {
     if (!diaAtual || gerandoPdf) return;
     setGerandoPdf(true);
-    try { await baixarPdfReport(diaAtual, { mostrarResponsavel: meta?.mostrarResponsavel !== false }); }
+    try { await baixarPdfReport(diaAtual, { mostrarResponsavel: meta?.mostrarResponsavel !== false, nomesArquivos: admin }); }
     catch (e) { console.error(e); window.alert("Não consegui gerar o PDF agora. Tente de novo em instantes."); }
     finally { setGerandoPdf(false); }
   };

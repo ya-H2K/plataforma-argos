@@ -16,9 +16,9 @@ const pad = (n) => String(n).padStart(2, "0");
 const dataHora = (d) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
 // Mesmo texto que aparece ao abrir cada card do Report.
-function textoDetalhe(id, d) {
+function textoDetalhe(id, d, nomesArquivos = false) {
   if (!d) return "";
-  if (id === "rpe") return `${d.recebidos} de ${d.total} arquivos recebidos` + (d.faltando?.length ? ` · faltam: ${d.faltando.join(", ")}` : "");
+  if (id === "rpe") return `${d.recebidos} de ${d.total} arquivos recebidos` + (nomesArquivos && d.faltando?.length ? ` · faltam: ${d.faltando.join(", ")}` : "");
   if (id === "bauk") return `${d.arquivos} ${plural(d.arquivos, "arquivo gerado", "arquivos gerados")}`;
   if (id === "urfa" || id === "endosso") {
     if (!d.total) return id === "urfa" ? "Nenhuma cessão de URFA no dia" : "Nenhum endosso no dia";
@@ -42,7 +42,7 @@ function linhasObservacoes(todas = []) {
     observacao: represadas.observacao || (represadas.rotulo === "Não" ? "Nenhuma baixa represada" : "") }] : [])];
 }
 
-function PaginaPdf({ dia, mostrarResponsavel, geradoEm, logo }) {
+function PaginaPdf({ dia, mostrarResponsavel, nomesArquivos, geradoEm, logo }) {
   const v = dia.valores;
   const obs = linhasObservacoes(dia.observacoes || []);
   const situ = dia.situacao;
@@ -70,7 +70,7 @@ function PaginaPdf({ dia, mostrarResponsavel, geradoEm, logo }) {
                 <tr key={p.id}>
                   <td className="pdf-nome">{p.nome}</td>
                   <td><Selo status={p.status}>{p.rotulo}</Selo></td>
-                  <td className="pdf-dim">{textoDetalhe(p.id, p.detalhe)}</td>
+                  <td className="pdf-dim">{textoDetalhe(p.id, p.detalhe, nomesArquivos)}</td>
                   <td className="pdf-hora pdf-ouro">{p.detalhe?.concluidoAs || "—"}</td>
                 </tr>
               ))}
@@ -190,7 +190,7 @@ function salvar(pdf, dia) {
   pdf.save(`Report Operacional Vox - ${dia.data.split("-").reverse().join("-")}.pdf`);
 }
 
-export async function baixarPdfReport(dia, { mostrarResponsavel = true } = {}) {
+export async function baixarPdfReport(dia, { mostrarResponsavel = true, nomesArquivos = false } = {}) {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")]);
   const caixa = document.createElement("div");
   caixa.style.cssText = "position:fixed;left:-10000px;top:0;z-index:-1;pointer-events:none";
@@ -203,7 +203,7 @@ export async function baixarPdfReport(dia, { mostrarResponsavel = true } = {}) {
   const root = createRoot(alvo);
   try {
     const logo = await logoPng();
-    flushSync(() => root.render(<PaginaPdf dia={dia} mostrarResponsavel={mostrarResponsavel} geradoEm={new Date()} logo={logo} />));
+    flushSync(() => root.render(<PaginaPdf dia={dia} mostrarResponsavel={mostrarResponsavel} nomesArquivos={nomesArquivos} geradoEm={new Date()} logo={logo} />));
     await esperarImagens(alvo);
     if (document.fonts?.ready) await document.fonts.ready;
     const pagina = alvo.firstElementChild;
