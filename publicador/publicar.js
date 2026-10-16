@@ -20,6 +20,7 @@ import { arquivoPublicado, lerDespesas } from "../server/despesas.js";
 import { conectar, gravarChaves, apagarChaves, enviarArquivo } from "./nuvem.js";
 import { statusDoDia } from "./bauk.js";
 import { avisarAprovados } from "./emails.js";
+import { horariosDosLogs, pastaLogsPreenchimento } from "./horarios-logs.js";
 import { faseBauk, isoLocal, prepararBases, montarDia } from "../server/status.js";
 
 const PASTA = path.dirname(fileURLToPath(import.meta.url));
@@ -177,6 +178,25 @@ const ARQ_HORARIOS = path.join(PASTA, ".horarios-etapas.json");
 let horarios = {};
 try { horarios = JSON.parse(fs.readFileSync(ARQ_HORARIOS, "utf-8")); } catch { /* ainda não existe */ }
 const horasEtapas = () => Object.fromEntries(Object.entries(horarios).map(([iso, h]) => [iso, h.horas || {}]));
+
+// Completa, a partir dos registros do preenchimento (Python), a hora das liquidações e das Baixas
+// Conciliadas nos dias em que o publicador não viu a mudança. Nunca troca uma hora já guardada.
+// Roda ao ligar e depois a cada 15 minutos.
+let recuperadoEm = 0;
+function recuperarHorariosDosLogs() {
+  if (Date.now() - recuperadoEm < 15 * 60 * 1000) return;
+  recuperadoEm = Date.now();
+  const doLog = horariosDosLogs(pastaLogsPreenchimento(config.planilha));
+  let novos = 0;
+  for (const [iso, horas] of Object.entries(doLog)) {
+    const reg = horarios[iso] || (horarios[iso] = { visto: {}, vistoEm: 0, horas: {} });
+    for (const [k, h] of Object.entries(horas)) if (!reg.horas[k]) { reg.horas[k] = h; novos++; }
+  }
+  if (novos) {
+    log(`Horários recuperados dos registros do preenchimento: ${novos}.`);
+    try { fs.writeFileSync(ARQ_HORARIOS, JSON.stringify(horarios, null, 1), "utf-8"); } catch { /* fica na memória */ }
+  }
+}
 
 function observarEtapas(brutas) {
   if (!brutas) return;
@@ -344,6 +364,7 @@ export async function publicar({ tudo = false } = {}) {
 
 // "Impressão digital" do que pode mudar: data da planilha e dos arquivos do caixa.
 async function assinatura() {
+  recuperarHorariosDosLogs();
   const partes = [];
   try { partes.push(fs.statSync(config.planilha).mtimeMs); } catch { partes.push("sem-planilha"); }
   try {
