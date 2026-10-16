@@ -43,12 +43,22 @@ export default function Relatorios({ aba, onAba }) {
   }, []);
   const abrir = (id) => { window.location.hash = id ? `#/relatorios/${id}` : "#/relatorios"; setSub(id); window.scrollTo(0, 0); };
 
-  if (sub === "carteira" && lista.some((r) => r.id === "carteira")) return <Carteira aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
-  if (sub === "desagio") return <Desagio aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
-  if (sub === "balancetes") return <Balancetes aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
-  if (sub === "laminas") return <Apresentacoes key="laminas" tipo="laminas" aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
-  if (sub === "apresentacoes") return <Apresentacoes aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
-  if (sub === "despesas") return <Despesas aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
+  const restritos = lista.filter((r) => r.emails);
+  const doFundo = lista.filter((r) => !r.emails);
+  // relatório restrito volta para a aba "Restritos"; os demais, para a lista do fundo
+  const voltar = (id) => () => abrir(RELATORIOS.find((r) => r.id === id)?.emails ? "restritos" : null);
+
+  if (sub === "carteira" && lista.some((r) => r.id === "carteira")) return <Carteira aba={aba} onAba={onAba} onVoltar={voltar("carteira")} />;
+  if (sub === "desagio") return <Desagio aba={aba} onAba={onAba} onVoltar={voltar("desagio")} />;
+  if (sub === "balancetes") return <Balancetes aba={aba} onAba={onAba} onVoltar={voltar("balancetes")} />;
+  if (sub === "laminas") return <Apresentacoes key="laminas" tipo="laminas" aba={aba} onAba={onAba} onVoltar={voltar("laminas")} />;
+  if (sub === "apresentacoes") return <Apresentacoes aba={aba} onAba={onAba} onVoltar={voltar("apresentacoes")} />;
+  if (sub === "despesas") return <Despesas aba={aba} onAba={onAba} onVoltar={voltar("despesas")} />;
+
+  // Duas abas: "Relatórios do fundo" (todos) e "Restritos" (#/relatorios/restritos), que só aparece
+  // para quem tem algum relatório restrito liberado. Só o admin vê, em cada card, quem tem acesso.
+  const naRestritos = sub === "restritos" && restritos.length > 0;
+  const mostrados = naRestritos ? restritos : doFundo;
   return (
     <>
       <BarraTopo aba={aba} onAba={onAba} />
@@ -59,13 +69,37 @@ export default function Relatorios({ aba, onAba }) {
             <p className="page-sub">Relatórios do FIDC Vox.</p>
           </div>
         </div>
+        {restritos.length > 0 && (
+          <nav className="abas-relatorios" aria-label="Grupos de relatórios">
+            <button type="button" className={naRestritos ? undefined : "on"} aria-pressed={!naRestritos} onClick={() => abrir(null)}>
+              Relatórios do fundo
+            </button>
+            <button type="button" className={naRestritos ? "on" : undefined} aria-pressed={naRestritos} onClick={() => abrir("restritos")}>
+              <svg className="abas-relatorios__cadeado" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
+                <rect x="3" y="7" width="10" height="7" rx="1" /><path d="M5 7V5a3 3 0 0 1 6 0v2" />
+              </svg>
+              Restritos{usuario?.admin && <span className="abas-relatorios__qtd">{restritos.length}</span>}
+            </button>
+          </nav>
+        )}
+        {naRestritos && (
+          <p className="restritos-nota">
+            {usuario?.admin
+              ? "Relatórios liberados só para pessoas específicas. Cada pessoa vê apenas os que foram liberados para ela."
+              : "Relatórios liberados para você."}
+          </p>
+        )}
         <div className="grade grade--3">
-          {lista.map((r) => (
+          {mostrados.map((r) => (
             <a key={r.id} href={`#/relatorios/${r.id}`} className="card relatorio-item"
               onClick={(e) => { e.preventDefault(); abrir(r.id); }}>
               <span className="relatorio-item__nome">{r.nome}</span>
               <span className="relatorio-item__desc">{r.descricao}</span>
-              {r.emails && usuario?.admin && <span className="relatorio-item__restrito">Acesso restrito</span>}
+              {r.emails && usuario?.admin && (
+                <span className="relatorio-item__acesso">
+                  Quem vê: <b>você (admin)</b>{r.emails.map((e) => <b key={e}>{e}</b>)}
+                </span>
+              )}
               <span className="relatorio-item__abrir" aria-hidden="true">Abrir →</span>
             </a>
           ))}

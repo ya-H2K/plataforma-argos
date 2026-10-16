@@ -1105,3 +1105,18 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .card__topo { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; min-width: 0; }
 .card__hora { flex: none; color: var(--text-dim); font-size: .75rem; line-height: 1.35; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .card__hora b { color: var(--text); font-weight: 600; }
+
+/* ================================================================ relatórios: abas "do fundo" / "Restritos" (16/10/2026) */
+.abas-relatorios { display: flex; gap: 2rem; border-bottom: 1px solid var(--line); margin: -.6rem 0 1.6rem; }
+.abas-relatorios button {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .55rem 0; margin-bottom: -1px; background: none; border: 0;
+  border-bottom: 1px solid transparent; color: var(--text-dim); font: inherit; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; cursor: pointer;
+}
+.abas-relatorios button:hover { color: var(--text); }
+.abas-relatorios button.on { color: var(--gold-bright); border-bottom-color: var(--gold); }
+.abas-relatorios__cadeado { width: .8rem; height: .8rem; flex: none; }
+.abas-relatorios__qtd { font-size: .68rem; letter-spacing: 0; padding: .05rem .4rem; border: 1px solid var(--line); color: var(--text-dim); }
+.restritos-nota { margin: -.6rem 0 1.4rem; color: var(--text-dim); font-size: .85rem; }
+.relatorio-item__acesso { display: grid; gap: .15rem; margin-top: .2rem; padding-top: .6rem; border-top: 1px solid var(--line); font-size: .75rem; color: var(--text-dim); }
+.relatorio-item__acesso b { font-weight: 400; color: var(--text); overflow-wrap: anywhere; }
+@media (max-width: 700px) { .abas-relatorios { gap: 1.4rem; margin-top: 0; } }
