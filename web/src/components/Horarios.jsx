@@ -9,6 +9,7 @@ const DESCRICAO = {
   urfa: () => "saída confirmada no extrato",
   endosso: () => "saída confirmada no extrato",
   baixas: (d) => `${d.principais} de ${d.esperadas} baixas principais`,
+  conciliadas: () => "valor preenchido na planilha",
 };
 
 export default function Horarios({ dia }) {
@@ -24,8 +25,12 @@ export default function Horarios({ dia }) {
     return () => { vivo = false; };
   }, [dia]);
 
-  const comHora = dia.processos.filter((p) => p.detalhe?.concluidoAs);
-  const semHora = dia.processos.filter((p) => !p.detalhe?.concluidoAs);
+  // Baixas Conciliadas entra na linha do tempo junto com as etapas
+  const conciliadas = { id: "conciliadas", nome: "Baixas Conciliadas", detalhe: { concluidoAs: dia.valores?.conciliadasAs || null },
+    status: dia.valores?.baixasConciliadas == null ? "aguardando" : "ok", rotulo: "Aguardando informações" };
+  const etapas = [...dia.processos, conciliadas];
+  const comHora = etapas.filter((p) => p.detalhe?.concluidoAs);
+  const semHora = etapas.filter((p) => !p.detalhe?.concluidoAs);
   // Tudo numa lista só, em ordem de horário; no empate, o arquivo RPE vem antes da etapa.
   const linhas = [
     ...(rpe || []).map((a) => ({ sub: true, hora: a.hora, nome: a.tipo, chave: `rpe-${a.tipo}` })),

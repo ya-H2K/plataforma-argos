@@ -447,7 +447,9 @@ export function montarDia(b, iso, { agora, horaFechamento, horaEncerramento = "1
       resumo("arquivosRpe", "Informação dos Arquivos", aplicarAberto(arquivosRpe(b, iso, aberto), aberto, info.arquivosRpe)),
       resumo("flash", "Flash Reports + BKs", aplicarAberto(flashReports(b, iso), flashAberto, info.flash)),
     ],
-    valores: valores(b, iso, aberto),
+    // conciliadasAs: hora em que o publicador viu as Baixas Conciliadas deixarem de estar "aguardando"
+    valores: (() => { const v = valores(b, iso, aberto);
+      return { ...v, conciliadasAs: v.baixasConciliadas != null ? horasDia.conciliadas || null : null }; })(),
     observacoes: quadroObservacoes(b, iso, aberto, processos, mostrarResponsavel, !arquivosAbertos),
     situacao: situacaoDoDia(b, iso, agora, horaEncerramento),
   };

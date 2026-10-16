@@ -199,6 +199,15 @@ function observarEtapas(brutas) {
     }
     reg.visto[p.id] = p.status;
   }
+  // Baixas Conciliadas: hora em que o valor do dia apareceu (saiu de "aguardando")
+  const conc = dia.valores?.baixasConciliadas == null ? "aguardando" : "ok";
+  const antesConc = reg.visto.conciliadas;
+  if (conc === "ok" && antesConc && antesConc !== "ok" && recente && !reg.horas.conciliadas) {
+    reg.horas.conciliadas = hhmm;
+    mudou = true;
+    log(`Baixas Conciliadas: preenchidas às ${hhmm}.`);
+  }
+  reg.visto.conciliadas = conc;
   reg.vistoEm = agoraLocal.getTime();
   // guarda só os últimos 120 dias
   for (const k of Object.keys(horarios).sort().slice(0, -120)) delete horarios[k];

@@ -1099,3 +1099,9 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
     border: 1px dashed var(--linha-forte); color: var(--text-dim); font-size: .88rem; }
   .aviso-computador b { color: var(--text); font-weight: 600; font-size: .95rem; }
 }
+
+/* ================================================================ hora nos cards de resumo (16/10/2026) */
+/* Liquidação Total e Baixas Conciliadas: "às 13:15" discreto, à direita do título (não muda a altura do card) */
+.card__topo { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; min-width: 0; }
+.card__hora { flex: none; color: var(--text-dim); font-size: .75rem; line-height: 1.35; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.card__hora b { color: var(--text); font-weight: 600; }

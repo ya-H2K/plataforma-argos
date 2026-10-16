@@ -107,10 +107,15 @@ function CardValor({ rotulo, valor }) {
   );
 }
 
-function CardResumo({ rotulo, valor, aguardando, linhas }) {
+// hora: discreta, à direita do título (Liquidação Total = última liquidação do dia; Baixas Conciliadas =
+// hora em que o valor apareceu). Sem hora, o título fica sozinho, como antes.
+function CardResumo({ rotulo, valor, aguardando, linhas, hora = null }) {
   return (
     <div className="card card--resumo">
-      <span className="card__rotulo">{rotulo}</span>
+      <div className="card__topo">
+        <span className="card__rotulo">{rotulo}</span>
+        {hora && <span className="card__hora">às <b>{hora}</b></span>}
+      </div>
       {aguardando
         ? <span className="card__valor card__valor--grande card__valor--aguardando">Aguardando...</span>
         : <Valor className="card__valor card__valor--grande" valor={valor} />}
@@ -170,6 +175,10 @@ function QuadroObservacoes({ linhas: todas, mostrarResponsavel }) {
 
 export default function Report({ dia, mostrarResponsavel = true }) {
   const v = dia.valores;
+  // Liquidação Total: hora da última liquidação do dia, só quando URFA e Endosso já terminaram
+  const liq = dia.processos.filter((p) => p.id === "urfa" || p.id === "endosso");
+  const horaLiq = liq.every((p) => p.status === "ok" || p.status === "sem_movimento")
+    ? liq.map((p) => p.detalhe?.concluidoAs).filter(Boolean).sort().at(-1) || null : null;
   const [aberto, setAberto] = useState(null);
   const [diaAberto, setDiaAberto] = useState(dia.data);
   if (diaAberto !== dia.data) { setDiaAberto(dia.data); setAberto(null); }
@@ -195,11 +204,11 @@ export default function Report({ dia, mostrarResponsavel = true }) {
 
       <section aria-label="Consolidação">
         <div className="grade grade--2">
-          <CardResumo rotulo="Liquidação Total" valor={v.liquidacaoTotal}
+          <CardResumo rotulo="Liquidação Total" valor={v.liquidacaoTotal} hora={horaLiq}
             linhas={[["Liquidação Pendente Dia", v.liquidacaoPendenteDia],
                      ["Liquidação Pendente Acumulado", v.liquidacaoPendenteAcumulado]]} />
           <CardResumo rotulo="Baixas Conciliadas" valor={v.baixasConciliadas}
-            aguardando={v.baixasConciliadas === null}
+            aguardando={v.baixasConciliadas === null} hora={v.conciliadasAs}
             linhas={[["Baixas Represadas Dia", v.baixasRepresadasDia],
                      ["Baixas Represadas Acumulado", v.baixasRepresadasAcumulado]]} />
         </div>
