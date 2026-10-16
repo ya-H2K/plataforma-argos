@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import logoH2 from "../assets/h2-kapital.svg";
 
 // Logo da H2 Kapital: arte original (dourado e branco), vetorizada para ficar nítida em qualquer tela.
@@ -33,16 +34,36 @@ export function LogoVoxFidc({ className = "" }) {
 }
 
 // Símbolo do Argos: o olho (o vigia de cem olhos) com um anel de pontos em volta.
+// Peças separadas para as animações (styles.css, "animações do logo"): o anel de pontos gira
+// (.olho-argos__pontos), o olho pisca (.olho-argos__olho), e na abertura o contorno e a íris se
+// desenham (pathLength=1) e cada ponto acende na sua vez (--i).
 const PONTOS = Array.from({ length: 12 }, (_, i) => [24 + 21 * Math.cos((i * Math.PI) / 6), 24 + 21 * Math.sin((i * Math.PI) / 6)]);
 export function OlhoArgos({ className = "", pontos = true }) {
   return (
     <svg className={`olho-argos ${className}`} viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      {pontos && PONTOS.map(([x, y], i) => <circle key={i} cx={x.toFixed(2)} cy={y.toFixed(2)} r="1.1" fill="currentColor" opacity=".55" />)}
-      <path d="M7 24 C13 15 19 12 24 12 C29 12 35 15 41 24 C35 33 29 36 24 36 C19 36 13 33 7 24 Z" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="24" cy="24" r="6.5" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="24" cy="24" r="2.6" fill="currentColor" />
+      {pontos && (
+        <g className="olho-argos__pontos">
+          {PONTOS.map(([x, y], i) => <circle key={i} style={{ "--i": i }} cx={x.toFixed(2)} cy={y.toFixed(2)} r="1.1" fill="currentColor" opacity=".55" />)}
+        </g>
+      )}
+      <g className="olho-argos__olho">
+        <path className="olho-argos__contorno" pathLength="1" d="M7 24 C13 15 19 12 24 12 C29 12 35 15 41 24 C35 33 29 36 24 36 C19 36 13 33 7 24 Z" stroke="currentColor" strokeWidth="1.8" />
+        <circle className="olho-argos__iris" pathLength="1" cx="24" cy="24" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+        <circle className="olho-argos__pupila" cx="24" cy="24" r="2.6" fill="currentColor" />
+      </g>
     </svg>
   );
+}
+
+// Abertura depois do login: tela cheia só com o olho, como um carregamento rápido (≈1,9 s).
+// Chama onFim quando termina (na hora, para quem pediu "reduzir movimento" no computador).
+export function AberturaArgos({ onFim }) {
+  useEffect(() => {
+    const semMovimento = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const t = setTimeout(onFim, semMovimento ? 0 : 2100);
+    return () => clearTimeout(t);
+  }, [onFim]);
+  return <div className="abertura" aria-hidden="true"><OlhoArgos /></div>;
 }
 
 // Marca da plataforma: olho + ARGOS em dourado, espaçado.

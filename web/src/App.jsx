@@ -6,6 +6,7 @@ import Relatorios from "./components/Relatorios.jsx";
 import Acesso from "./components/Acesso.jsx";
 import Home from "./components/Home.jsx";
 import { apiAuth } from "./api.js";
+import { AberturaArgos } from "./components/Logos.jsx";
 import { SessaoContexto } from "./sessao.js";
 
 // Início (#/), Fluxo operacional (#/report), Fluxo de caixa (#/caixa), Relatórios
@@ -24,6 +25,8 @@ const abaDaUrl = () => {
 export default function App() {
   const [aba, setAba] = useState(abaDaUrl());
   const [usuario, setUsuario] = useState(undefined);        // undefined = conferindo; null = não logado
+  const [abertura, setAbertura] = useState(false);          // olho no centro, só logo depois do login
+  const fimAbertura = useCallback(() => setAbertura(false), []);
 
   useEffect(() => {
     apiAuth.sessao()
@@ -54,8 +57,9 @@ export default function App() {
 
   if (usuario === undefined) return <div className="acesso"><p className="acesso__carregando">Carregando…</p></div>;
   // depois do login, sempre começa no início
-  const entrar = (u) => { window.location.hash = "#/"; setAba("home"); setUsuario(u); };
+  const entrar = (u) => { window.location.hash = "#/"; setAba("home"); setAbertura(true); setUsuario(u); };
   if (!usuario) return <Acesso onEntrar={entrar} />;
+  if (abertura) return <AberturaArgos onFim={fimAbertura} />;
 
   const abaVisivel = SO_ADMIN.includes(aba) && !usuario.admin ? "home" : aba;
   return (

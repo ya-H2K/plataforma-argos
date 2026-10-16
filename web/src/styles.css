@@ -963,3 +963,50 @@ a.marca:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
 .tabela-carteira__valor { color: var(--gold-bright); font-weight: 600; }
 .relatorio-item__restrito { font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
 @media (max-width: 1000px) { .carteira .extrato__topo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* ================================================================ animações do logo (16/10/2026) */
+/* peças do olho: o anel de pontos gira e o olho pisca, cada um em torno do centro */
+.olho-argos { overflow: visible; }
+.olho-argos__pontos, .olho-argos__olho { transform-box: view-box; transform-origin: 24px 24px; }
+.marca__saida { display: flex; align-items: center; gap: .9rem; }
+.marca .logo-h2 { position: relative; z-index: 2; }
+
+/* 1) entrada (F5, novo acesso, logo depois do login): o Argos sai de trás do logo da H2 */
+.marca--entrada .marca__saida { clip-path: inset(-12px -40px -12px 0); }
+.marca--entrada .logo-h2 { animation: ar-h2 .45s cubic-bezier(.2,.8,.2,1) both; }
+.marca--entrada .marca__divisor { animation: ar-divisor .4s ease-out .2s both; }
+.marca--entrada .marca-argos { animation: ar-sai .85s cubic-bezier(.16,.84,.24,1) .25s both; }
+.marca--entrada .olho-argos__pontos { animation: ar-pontos-chegam .7s cubic-bezier(.2,.8,.2,1) .75s both; }
+@keyframes ar-h2 { from { transform: scale(.9); opacity: .4; } }
+@keyframes ar-divisor { from { transform: scaleY(0); } }
+@keyframes ar-sai { from { transform: translateX(calc(-100% - 1.8rem)); opacity: 0; } 35% { opacity: 1; } }
+@keyframes ar-pontos-chegam { from { transform: rotate(-120deg); opacity: 0; } }
+
+/* 2) mouse em cima (ou foco): cresce um pouco, pisca e os pontos dão uma volta */
+.marca .olho-argos { transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(1.14); }
+.marca--giro .olho-argos__olho { animation: ar-pisca .38s ease-in-out .08s; }
+.marca--giro .olho-argos__pontos { animation: ar-giro .95s cubic-bezier(.45,0,.25,1); }
+@keyframes ar-pisca { 45%, 55% { transform: scaleY(.08); } }
+@keyframes ar-giro { to { transform: rotate(360deg); } }
+
+/* 3) abertura depois do login: só o olho, no centro (≈1,9 s; App.jsx/AberturaArgos) */
+.abertura { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg);
+  animation: ar-abertura-sai .45s ease-in 1.55s both; }
+.abertura .olho-argos { width: 7.5rem; height: 7.5rem; animation: ar-abertura-olho .45s ease-in 1.55s both; }
+.abertura .olho-argos__contorno, .abertura .olho-argos__iris { stroke-dasharray: 1; animation: ar-desenha .6s cubic-bezier(.4,0,.2,1) both; }
+.abertura .olho-argos__iris { animation-delay: .2s; }
+.abertura .olho-argos__pupila { transform-box: fill-box; transform-origin: center; animation: ar-pupila .35s cubic-bezier(.3,1.6,.5,1) .55s both; }
+.abertura .olho-argos__pontos circle { animation: ar-ponto-acende .5s ease-out both; animation-delay: calc(.35s + var(--i) * .06s); }
+.abertura .olho-argos__pontos { animation: ar-giro-lento 1.6s cubic-bezier(.3,0,.2,1) both; }
+.abertura .olho-argos__olho { animation: ar-pisca .34s ease-in-out 1.2s; }
+@keyframes ar-desenha { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes ar-pupila { from { transform: scale(0); } }
+@keyframes ar-ponto-acende { 0% { opacity: .15; } 40% { opacity: 1; } 100% { opacity: .55; } }
+@keyframes ar-giro-lento { from { transform: rotate(-90deg); } to { transform: rotate(0); } }
+@keyframes ar-abertura-sai { to { opacity: 0; visibility: hidden; } }
+@keyframes ar-abertura-olho { to { transform: scale(1.35); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .marca--entrada *, .marca--giro *, .abertura, .abertura * { animation: none !important; }
+  a.marca:hover .olho-argos { transform: none; }
+}

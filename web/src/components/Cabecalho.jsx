@@ -29,6 +29,26 @@ function usePendentes(ativo) {
   return n;
 }
 
+// Animações do logo (styles.css, "animações do logo"):
+// - entrada: só na primeira barra desde que a página abriu (F5, novo acesso ou logo depois do login);
+//   a barra remonta a cada tela, por isso o aviso fica no módulo;
+// - mouse em cima (ou foco): o olho cresce, pisca e o anel de pontos dá uma volta, sempre até o fim.
+let entradaFeita = false;
+function useAnimacaoMarca() {
+  const [entrada, setEntrada] = useState(() => !entradaFeita);
+  const [giro, setGiro] = useState(false);
+  useEffect(() => {
+    entradaFeita = true;
+    if (!entrada) return;
+    const t = setTimeout(() => setEntrada(false), 1600);
+    return () => clearTimeout(t);
+  }, [entrada]);
+  const girar = () => { if (!entrada) setGiro(true); };
+  const fim = (e) => { if (e.animationName === "ar-giro") setGiro(false); };
+  const classe = `marca${entrada ? " marca--entrada" : ""}${giro ? " marca--giro" : ""}`;
+  return { classe, girar, fim };
+}
+
 // Barra superior (Plataforma Argos): H2 Kapital + Argos, abas do site e, à direita, a navegação
 // da aba aberta e a marca do Vox FIDC. No início (home) as abas e a marca do fundo não aparecem
 // no topo: a marca do Vox FIDC fica em destaque no meio da página.
@@ -38,14 +58,18 @@ export function BarraTopo({ aba, onAba, children, semAbas = false }) {
   const pendentes = usePendentes(usuario?.admin);
   const navRef = useRef(null);
   const sublinhado = useSublinhado(navRef, semAbas ? null : aba);
+  const animacao = useAnimacaoMarca();
   return (
     <header className="topbar">
       <div className="topbar__esquerda">
-        <a className="marca" href="#/" title="Ir para o início"
+        <a className={animacao.classe} href="#/" title="Ir para o início"
+          onMouseEnter={animacao.girar} onFocus={animacao.girar} onAnimationEnd={animacao.fim}
           onClick={(e) => { e.preventDefault(); onAba("home"); }}>
           <LogoH2 />
-          <span className="marca__divisor" aria-hidden="true" />
-          <MarcaArgos />
+          <span className="marca__saida">
+            <span className="marca__divisor" aria-hidden="true" />
+            <MarcaArgos />
+          </span>
         </a>
         {!semAbas && <nav className="abas" aria-label="Telas do site" ref={navRef}>
           {abas.map((a) => (
