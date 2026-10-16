@@ -140,6 +140,34 @@ function lerChegadasRpe() {
   return saida;
 }
 
+// ---------- Carteira em Dia (relatório restrito) ----------
+// A automação carteira_em_dia.py (C:\Automacao\Vox) grava carteira_em_dia\historico.json com um valor
+// por dia. Vai na chave "restrito:carteira", que o banco só entrega ao admin e aos e-mails da tabela
+// relatorio_acesso (supabase/relatorios-restritos.sql). Enquanto esse SQL não foi rodado, a chave
+// NÃO é publicada (senão qualquer usuário logado conseguiria ler).
+let restritosOk = false;
+let avisouRestritos = false;
+async function conferirRestritos(sb) {
+  if (restritosOk) return true;
+  const { error } = await sb.from("relatorio_acesso").select("relatorio").limit(1);
+  restritosOk = !error;
+  if (!restritosOk && !avisouRestritos) {
+    avisouRestritos = true;
+    aviso("Carteira em Dia: rode o supabase/relatorios-restritos.sql no Supabase; até lá o relatório não é publicado.");
+  }
+  return restritosOk;
+}
+function lerCarteira() {
+  try {
+    const j = JSON.parse(fs.readFileSync(config.carteiraHistorico, "utf-8"));
+    const linhas = Object.entries(j.datas || {})
+      .filter(([iso, v]) => /^\d{4}-\d{2}-\d{2}$/.test(iso) && Number.isFinite(v))
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([data, valor]) => ({ data, valor }));
+    return { linhas, atualizado: j.atualizado || null };
+  } catch { return null; }                  // ainda não existe (a automação nunca rodou) ou está sendo gravado
+}
+
 // ---------- horário em que cada etapa ficou OK ----------
 // A cada minuto o publicador olha o status das etapas de hoje. Quando vê uma etapa passar de
 // "não OK" para OK, guarda a hora (publicador/.horarios-etapas.json). Só vale se a observação
@@ -201,6 +229,10 @@ export async function publicar({ tudo = false } = {}) {
   }
   Object.assign(mapa, gerarCaixa(meses));
   if (leitura.bases) Object.assign(mapa, gerarRelatorios(leitura.bases));
+
+  // Carteira em Dia: só depois do SQL dos relatórios restritos
+  const carteira = lerCarteira();
+  if (carteira && await conferirRestritos(sb)) mapa["restrito:carteira"] = carteira;
 
   // Despesas: o arquivo mais recente da pasta de publicados
   let despesasArq = null;
@@ -344,6 +376,8 @@ async function assinatura() {
   try {
     for (const n of fs.readdirSync(config.rpeChegadas).sort()) partes.push(`r:${n}:${fs.statSync(path.join(config.rpeChegadas, n)).mtimeMs}`);
   } catch { partes.push("sem-rpe-chegadas"); }
+  try { partes.push(`c:${fs.statSync(config.carteiraHistorico).mtimeMs}`); } catch { partes.push("sem-carteira"); }
+  partes.push(restritosOk ? "restritos" : "sem-restritos");
   partes.push(hash(statusBaukParaBases()), hash(dataBauk), hash(horasEtapas()));
   return partes.join("|");
 }
@@ -362,6 +396,7 @@ async function vigiar() {
   log(`Balancete e Razão: ${config.balancetesPublicado}`);
   log(`Lâminas: ${config.laminasPublicado}`);
   log(`Chegada dos arquivos RPE: ${config.rpeChegadas}`);
+  log(`Carteira em Dia: ${config.carteiraHistorico}`);
   try {
     const copiados = await prepararPublicados({ pasta: config.caixaPublicado, modeloTrabalho: config.caixaTrabalho, importar: config.caixaImportar });
     if (copiados.length) log(`Fluxo de caixa, cópia inicial: ${copiados.join(", ")}`);

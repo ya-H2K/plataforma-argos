@@ -4,6 +4,8 @@ import { BarraTopo } from "./Cabecalho.jsx";
 import Despesas from "./Despesas.jsx";
 import Apresentacoes from "./Apresentacoes.jsx";
 import Balancetes from "./Balancetes.jsx";
+import Carteira from "./Carteira.jsx";
+import { useSessao } from "../sessao.js";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, curta, valorNum } from "../formato.js";
 import SeletorMes from "./SeletorMes.jsx";
@@ -17,13 +19,22 @@ export const RELATORIOS = [
   { id: "apresentacoes", nome: "Apresentação de Resultados", descricao: "Apresentações mensais do fundo." },
   { id: "balancetes", nome: "Balancete", descricao: "Balancete e razão de cada mês." },
   { id: "laminas", nome: "Lâmina", descricao: "Lâminas mensais do fundo." },
+  // restrito: só o admin e os e-mails abaixo veem o card. Quem garante de verdade é o banco
+  // (tabela relatorio_acesso, chave "restrito:carteira"); manter as duas listas iguais.
+  { id: "carteira", nome: "Carteira em Dia", descricao: "Valor presente a vencer do estoque, dia a dia.",
+    emails: ["lucas.ramao@voxcred.com.br"] },
 ];
+// Relatórios que a pessoa logada pode abrir.
+export const relatoriosDe = (usuario) => RELATORIOS.filter((r) =>
+  !r.emails || usuario?.admin || r.emails.includes(String(usuario?.email || "").toLowerCase()));
 // Na tela, em ordem alfabética (ignorando acentos e maiúsculas).
 RELATORIOS.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" }));
 
 const subDaUrl = () => window.location.hash.match(/^#\/relatorios\/([\w-]+)/)?.[1] ?? null;
 
 export default function Relatorios({ aba, onAba }) {
+  const { usuario } = useSessao();
+  const lista = relatoriosDe(usuario);
   const [sub, setSub] = useState(subDaUrl());
   useEffect(() => {
     const aoMudar = () => setSub(subDaUrl());
@@ -32,6 +43,7 @@ export default function Relatorios({ aba, onAba }) {
   }, []);
   const abrir = (id) => { window.location.hash = id ? `#/relatorios/${id}` : "#/relatorios"; setSub(id); window.scrollTo(0, 0); };
 
+  if (sub === "carteira" && lista.some((r) => r.id === "carteira")) return <Carteira aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
   if (sub === "desagio") return <Desagio aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
   if (sub === "balancetes") return <Balancetes aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
   if (sub === "laminas") return <Apresentacoes key="laminas" tipo="laminas" aba={aba} onAba={onAba} onVoltar={() => abrir(null)} />;
@@ -48,11 +60,12 @@ export default function Relatorios({ aba, onAba }) {
           </div>
         </div>
         <div className="grade grade--3">
-          {RELATORIOS.map((r) => (
+          {lista.map((r) => (
             <a key={r.id} href={`#/relatorios/${r.id}`} className="card relatorio-item"
               onClick={(e) => { e.preventDefault(); abrir(r.id); }}>
               <span className="relatorio-item__nome">{r.nome}</span>
               <span className="relatorio-item__desc">{r.descricao}</span>
+              {r.emails && usuario?.admin && <span className="relatorio-item__restrito">Acesso restrito</span>}
               <span className="relatorio-item__abrir" aria-hidden="true">Abrir →</span>
             </a>
           ))}

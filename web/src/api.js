@@ -136,6 +136,15 @@ export const apiCaixa = {
 // ---------------------------------------------------------------- relatórios (todos os usuários)
 
 export const apiRelatorios = {
+  // Carteira em Dia (restrito): um valor por dia útil. O banco só entrega ao admin e aos
+  // e-mails liberados em relatorio_acesso; para os demais a chave vem vazia.
+  carteira: async () => {
+    const r = await lerPainel(["restrito:carteira", "inicio"]);
+    if (!r["restrito:carteira"]) throw Object.assign(new Error("O relatório Carteira em Dia ainda não foi publicado."), { status: 404 });
+    return { linhas: r["restrito:carteira"].linhas || [], hoje: agoraBrasilia().iso,
+      meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
+  },
+
   // Todas as remessas da aba Deságio (o filtro de período é feito na tela).
   desagio: async () => {
     const r = await lerPainel(["rel:desagio", "inicio"]);

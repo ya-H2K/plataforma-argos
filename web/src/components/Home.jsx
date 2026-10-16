@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, apiAdmin, apiCaixa } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
-import { RELATORIOS } from "./Relatorios.jsx";
+import { relatoriosDe } from "./Relatorios.jsx";
 import { useSessao } from "../sessao.js";
 import { LogoVoxFidc } from "./Logos.jsx";
 
@@ -60,7 +60,7 @@ export default function Home({ aba, onAba }) {
     {
       id: "relatorios", titulo: "Relatórios", subtitulo: "Documentos do fundo",
       texto: "Apresentação de resultados, balancete, deságio, despesas e lâmina.",
-      rodape: <span className="home__info">{RELATORIOS.length} relatórios</span>,
+      rodape: <span className="home__info">{relatoriosDe(usuario).length} relatórios</span>,
     },
   ];
 
