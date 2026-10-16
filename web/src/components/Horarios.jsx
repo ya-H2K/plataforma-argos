@@ -34,7 +34,8 @@ export default function Horarios({ dia }) {
 
   return (
     <main className="report">
-      <section className="tl" aria-label="Horários do dia">
+      <p className="so-celular aviso-computador"><b>Melhor no computador</b>A linha do tempo dos horários precisa de mais largura. Abra o Argos no computador para ver esta aba.</p>
+      <section className="tl so-computador" aria-label="Horários do dia">
         {linhas.length === 0 && !dia.temDados ? (
           <p className="tl__vazio">Nenhum horário registrado neste dia.</p>
         ) : (

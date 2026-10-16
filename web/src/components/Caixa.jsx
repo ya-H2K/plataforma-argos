@@ -136,7 +136,7 @@ function Tabela({ linhas, selecionada, onSelecionar }) {
         <span className="card--tabela__nota">Valores em R$</span>
       </div>
       <div className="tabela-rolagem" tabIndex={0} role="region" aria-label="Movimentação diária, role para o lado">
-        <table className="caixa-tabela">
+        <table className="caixa-tabela caixa-tabela--diaria">
           <thead>
             <tr>
               <th scope="col"><Titulo l2="Data" /></th>
@@ -176,6 +176,7 @@ function Tabela({ linhas, selecionada, onSelecionar }) {
           </tbody>
         </table>
       </div>
+      <p className="so-celular card--tabela__nota">No celular aparecem 4 das 12 colunas. A tabela completa fica no computador e em "Baixar planilha".</p>
     </section>
   );
 }

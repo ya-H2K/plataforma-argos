@@ -262,7 +262,8 @@ function Extrato({ linhas }) {
                 <tbody key={mes}>
                   {agrupar && (
                     <tr className="tabela-desagio__mes">
-                      <th scope="rowgroup" colSpan={3}>{rotuloMes(mes)} <span>· {s.qtd} {s.qtd === 1 ? "aquisição" : "aquisições"}</span></th>
+                      <th scope="rowgroup" colSpan={2}>{rotuloMes(mes)} <span>· {s.qtd} {s.qtd === 1 ? "aquisição" : "aquisições"}</span></th>
+                      <td className="tabela-desagio__arquivo" />
                       <td className="num">{valorNum(s.nominal)}</td>
                       <td className="num">{valorNum(s.pago)}</td>
                       <td className="num">{valorNum(s.valor)}</td>
@@ -285,7 +286,8 @@ function Extrato({ linhas }) {
             })}
             <tfoot>
               <tr>
-                <th scope="row" colSpan={3}>Total do período</th>
+                <th scope="row" colSpan={2}>Total do período</th>
+                <td className="tabela-desagio__arquivo" />
                 <td className="num">{valorNum(t.nominal)}</td>
                 <td className="num">{valorNum(t.pago)}</td>
                 <td className="num">{valorNum(t.valor)}</td>

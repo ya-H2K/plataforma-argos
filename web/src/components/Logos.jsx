@@ -63,7 +63,7 @@ export function AberturaArgos({ onFim }) {
     const t = setTimeout(onFim, semMovimento ? 0 : 2100);
     return () => clearTimeout(t);
   }, [onFim]);
-  return <div className="abertura" aria-hidden="true"><OlhoArgos /></div>;
+  return <div className="abertura-argos" aria-hidden="true"><OlhoArgos /></div>;
 }
 
 // Marca da plataforma: olho + ARGOS em dourado, espaçado.

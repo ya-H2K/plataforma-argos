@@ -990,15 +990,15 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 @keyframes ar-giro { to { transform: rotate(360deg); } }
 
 /* 3) abertura depois do login: só o olho, no centro (≈1,9 s; App.jsx/AberturaArgos) */
-.abertura { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg);
+.abertura-argos { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg);
   animation: ar-abertura-sai .45s ease-in 1.55s both; }
-.abertura .olho-argos { width: 7.5rem; height: 7.5rem; animation: ar-abertura-olho .45s ease-in 1.55s both; }
-.abertura .olho-argos__contorno, .abertura .olho-argos__iris { stroke-dasharray: 1; animation: ar-desenha .6s cubic-bezier(.4,0,.2,1) both; }
-.abertura .olho-argos__iris { animation-delay: .2s; }
-.abertura .olho-argos__pupila { transform-box: fill-box; transform-origin: center; animation: ar-pupila .35s cubic-bezier(.3,1.6,.5,1) .55s both; }
-.abertura .olho-argos__pontos circle { animation: ar-ponto-acende .5s ease-out both; animation-delay: calc(.35s + var(--i) * .06s); }
-.abertura .olho-argos__pontos { animation: ar-giro-lento 1.6s cubic-bezier(.3,0,.2,1) both; }
-.abertura .olho-argos__olho { animation: ar-pisca .34s ease-in-out 1.2s; }
+.abertura-argos .olho-argos { width: 7.5rem; height: 7.5rem; animation: ar-abertura-olho .45s ease-in 1.55s both; }
+.abertura-argos .olho-argos__contorno, .abertura-argos .olho-argos__iris { stroke-dasharray: 1; animation: ar-desenha .6s cubic-bezier(.4,0,.2,1) both; }
+.abertura-argos .olho-argos__iris { animation-delay: .2s; }
+.abertura-argos .olho-argos__pupila { transform-box: fill-box; transform-origin: center; animation: ar-pupila .35s cubic-bezier(.3,1.6,.5,1) .55s both; }
+.abertura-argos .olho-argos__pontos circle { animation: ar-ponto-acende .5s ease-out both; animation-delay: calc(.35s + var(--i) * .06s); }
+.abertura-argos .olho-argos__pontos { animation: ar-giro-lento 1.6s cubic-bezier(.3,0,.2,1) both; }
+.abertura-argos .olho-argos__olho { animation: ar-pisca .34s ease-in-out 1.2s; }
 @keyframes ar-desenha { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes ar-pupila { from { transform: scale(0); } }
 @keyframes ar-ponto-acende { 0% { opacity: .15; } 40% { opacity: 1; } 100% { opacity: .55; } }
@@ -1007,6 +1007,95 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 @keyframes ar-abertura-olho { to { transform: scale(1.35); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .marca--entrada *, .marca--giro *, .abertura, .abertura * { animation: none !important; }
+  .marca--entrada *, .marca--giro *, .abertura-argos, .abertura-argos * { animation: none !important; }
   a.marca:hover .olho-argos { transform: none; }
+}
+
+/* ================================================================ celular (até 700px, 16/10/2026) */
+/* Mesmo site, ajustado: cabeçalho compacto, cards mais baixos, tabelas grandes resumidas. */
+.so-celular { display: none; }
+@media (max-width: 700px) {
+  .so-celular { display: block; }
+  .so-computador { display: none !important; }
+
+  /* cabeçalho: marca + ajustes numa linha; abas numa faixa que desliza; navegação do dia embaixo */
+  .topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "marca ajustes" "abas abas" "nav nav"; gap: 0; padding: 0; }
+  .topbar__esquerda, .topbar__direita { display: contents; }
+  .topbar .marca { grid-area: marca; padding: .55rem 1rem; gap: .7rem; }
+  .topbar .marca__saida { gap: .7rem; }
+  .topbar .logo-h2 { height: 2rem; }
+  .topbar .olho-argos { width: 1.4rem; height: 1.4rem; }
+  .topbar .marca-argos { gap: .45rem; }
+  .topbar .marca-argos__nome { font-size: 1rem; letter-spacing: .26em; }
+  .topbar .marca__divisor { height: 1.6rem; }
+  .topbar .ajustes { grid-area: ajustes; align-self: center; padding-right: .6rem; }
+  .ajustes__nome { display: none; }
+  .topbar__fundo { display: none; }
+  .topbar .abas { grid-area: abas; display: flex; flex-wrap: nowrap; gap: 1.4rem; overflow-x: auto; overscroll-behavior-x: contain;
+    padding: 0 1rem; border-top: 1px solid var(--line); scrollbar-width: none; position: relative; }
+  .topbar .abas::-webkit-scrollbar { display: none; }
+  .topbar .aba { flex: none; padding: .55rem 0; font-size: .85rem; white-space: nowrap; }
+  .topbar .navegacao { grid-area: nav; display: flex; gap: .4rem; padding: .5rem 1rem; border-top: 1px solid var(--line); }
+  .topbar .navegacao > input, .topbar .navegacao > .seletor-mes { flex: 1; min-width: 0; }
+  .topbar .navegacao .seletor-mes__botao { width: 100%; min-width: 0; }
+  .topbar .navegacao .button--pequeno { padding: 0 .8rem; }
+
+  /* página */
+  .pagina, .pagina--larga, .pagina--carteira { padding: 1.1rem 1rem 2rem; }
+  .cabeca-pagina { margin-bottom: 1rem; gap: .5rem 1rem; }
+  .page-title { font-size: 1.35rem; }
+  .page-sub { font-size: .85rem; }
+  .cabeca-pagina__direita { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .9rem; padding-top: 0; }
+  .estado { font-size: .85rem; }
+  .sync { font-size: .75rem; gap: .2rem .7rem; }
+
+  /* Report Operacional: status 2 por linha, cards baixos */
+  .abas-report { margin-bottom: .8rem; }
+  .report { gap: .55rem; }
+  .grade { gap: .55rem; }
+  .card { padding: .8rem .85rem .85rem; gap: .5rem; }
+  .card__rotulo { font-size: .66rem; min-height: 0; letter-spacing: .08em; }
+  .carimbo { font-size: .64rem; padding: .18rem .5rem; gap: .35rem; }
+  .card__valor { font-size: 1rem; }
+  .card--resumo { padding: .95rem 1rem; gap: .6rem; }
+  .card__valor--grande { font-size: 1.25rem; }
+  .card__linhas div { padding: .5rem 0; }
+  .card__linhas dt { font-size: .8rem; }
+  .card--quadro { padding: 1rem; }
+
+  /* Fluxo de Caixa: tabela só com Data, Entradas, Saídas e Saldo caixa total (as 12 no computador/planilha) */
+  .card--tabela { padding: 1rem; }
+  .card--tabela .tabela-rolagem { margin: 0 -1rem; padding: 0 .75rem; }
+  .caixa-tabela--diaria tr > :nth-child(2), .caixa-tabela--diaria tr > :nth-child(5), .caixa-tabela--diaria tr > :nth-child(6),
+  .caixa-tabela--diaria tr > :nth-child(7), .caixa-tabela--diaria tr > :nth-child(8), .caixa-tabela--diaria tr > :nth-child(9),
+  .caixa-tabela--diaria tr > :nth-child(11), .caixa-tabela--diaria tr > :nth-child(12) { display: none; }
+  .caixa-tabela--diaria { font-size: .65rem; letter-spacing: -.01em; }
+  .caixa-tabela--diaria tbody th, .caixa-tabela--diaria td { padding: .55rem .2rem; }
+  .caixa-tabela--diaria th:first-child { padding-right: .2rem; }
+  .caixa-tabela--diaria .abertura__rotulo { white-space: normal; max-width: 3.6rem; font-size: .6rem; line-height: 1.25; }
+  .caixa-tabela--diaria thead th { min-width: 0; padding-inline: .35rem; }
+  .card--tabela > .so-celular { margin: 0; }
+  .card--grafico { padding: 1rem 1rem .8rem; }
+
+  /* Deságio: sem a coluna do arquivo (continua no CSV) */
+  .tabela-desagio thead th:nth-child(3), .tabela-desagio .tabela-desagio__arquivo { display: none; }
+  .tabela-desagio { font-size: .74rem; }
+
+  /* filtros dos relatórios */
+  .filtro-relatorio { gap: .5rem; width: 100%; justify-content: flex-start; }
+  .filtro-relatorio .navegacao { width: 100%; }
+  .filtro-relatorio .seletor-mes { flex: 1; min-width: 0; }
+  .filtro-relatorio .seletor-mes__botao { width: 100%; min-width: 0; }
+  .filtro-relatorio .navegacao { gap: .35rem; }
+  .filtro-relatorio .contexto__seg button { padding-inline: .6rem; }
+  .filtro-relatorio .btn-icone { padding: 0 .6rem; }
+  .extrato__num { padding: .8rem .9rem; }
+  .extrato__num dd { font-size: .92rem; }
+  .extrato:not(.carteira) .extrato__num--destaque { grid-column: 1 / -1; order: -1; }
+  .extrato:not(.carteira) .extrato__num--destaque dd { font-size: 1.4rem; }
+
+  /* Horários (admin): no celular só um aviso */
+  .aviso-computador { display: grid; gap: .35rem; justify-items: center; text-align: center; padding: 1.4rem 1.2rem;
+    border: 1px dashed var(--linha-forte); color: var(--text-dim); font-size: .88rem; }
+  .aviso-computador b { color: var(--text); font-weight: 600; font-size: .95rem; }
 }
