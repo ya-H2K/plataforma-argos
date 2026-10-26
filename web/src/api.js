@@ -203,6 +203,7 @@ function pdfMensal(chave, pasta) {
 }
 export const apiApresentacoes = pdfMensal("rel:apresentacoes", "apresentacoes");
 export const apiLaminas = pdfMensal("rel:laminas", "laminas");
+export const apiFlash = pdfMensal("rel:flash", "flash");
 
 // ---------------------------------------------------------------- balancete e razão (todos os usuários)
 

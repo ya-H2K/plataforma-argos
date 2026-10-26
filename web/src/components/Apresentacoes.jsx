@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { apiApresentacoes, apiLaminas } from "../api.js";
+import { apiApresentacoes, apiFlash, apiLaminas } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
 import SeletorMes from "./SeletorMes.jsx";
 import VisorPdf from "./VisorPdf.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 
-// Relatórios com um PDF por mês: Apresentação de Resultados e Lâminas (mesma tela, textos diferentes).
+// Relatórios com um PDF por mês: Apresentação de Resultados, Lâminas e Flash Report (mesma tela, textos diferentes).
 //   #/relatorios/<rota>          lista (cards por ano)
 //   #/relatorios/<rota>/AAAA-MM  o PDF do mês na tela, com "Baixar PDF"
 // Os PDFs vêm das pastas de publicados (publicador/publicar.js → bucket "caixa", <rota>/AAAA-MM.pdf).
@@ -22,6 +22,12 @@ export const TIPOS = {
     sub: "Lâminas mensais do FIDC Vox", umaPublicada: "publicada", variasPublicadas: "publicadas",
     vazio: "Nenhuma lâmina publicada ainda.", semMes: "Não há lâmina publicada para",
     tituloVisor: "Lâmina mensal",
+  },
+  flash: {
+    rota: "flash", api: apiFlash, titulo: "Flash Report",
+    sub: "Flash Reports mensais do FIDC Vox", umaPublicada: "publicado", variasPublicadas: "publicados",
+    vazio: "Nenhum Flash Report publicado ainda.", semMes: "Não há Flash Report publicado para",
+    tituloVisor: "Flash Report",
   },
 };
 

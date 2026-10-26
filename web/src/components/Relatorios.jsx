@@ -19,6 +19,7 @@ export const RELATORIOS = [
   { id: "apresentacoes", nome: "Apresentação de Resultados", descricao: "Apresentações mensais do fundo." },
   { id: "balancetes", nome: "Balancete", descricao: "Balancete e razão de cada mês." },
   { id: "laminas", nome: "Lâmina", descricao: "Lâminas mensais do fundo." },
+  { id: "flash", nome: "Flash Report", descricao: "Flash Reports mensais do fundo." },
   // restrito: só o admin e os e-mails abaixo veem o card. Quem garante de verdade é o banco
   // (tabela relatorio_acesso, chave "restrito:carteira"); manter as duas listas iguais.
   { id: "carteira", nome: "Carteira em Dia", descricao: "Valor presente a vencer do estoque, dia a dia.",
@@ -52,6 +53,7 @@ export default function Relatorios({ aba, onAba }) {
   if (sub === "desagio") return <Desagio aba={aba} onAba={onAba} onVoltar={voltar("desagio")} />;
   if (sub === "balancetes") return <Balancetes aba={aba} onAba={onAba} onVoltar={voltar("balancetes")} />;
   if (sub === "laminas") return <Apresentacoes key="laminas" tipo="laminas" aba={aba} onAba={onAba} onVoltar={voltar("laminas")} />;
+  if (sub === "flash") return <Apresentacoes key="flash" tipo="flash" aba={aba} onAba={onAba} onVoltar={voltar("flash")} />;
   if (sub === "apresentacoes") return <Apresentacoes aba={aba} onAba={onAba} onVoltar={voltar("apresentacoes")} />;
   if (sub === "despesas") return <Despesas aba={aba} onAba={onAba} onVoltar={voltar("despesas")} />;
 

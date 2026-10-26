@@ -5,7 +5,8 @@
 // Os registros ficam em <pasta da planilha>\_automacao\logs\log_preenchimento_AAAA-MM-DD.txt
 // (o Python guarda os últimos 15 dias). Cada execução começa com
 //   ##### Execução em 16/10/2026 13:15:02 #####
-// e a hora usada é a da primeira execução em que a informação aparece (o Python roda a cada 5 min,
+// e a hora usada é a da primeira execução em que a informação aparece (Baixas Conciliadas: a da
+// última vez que o valor mudou, para baixas que chegam em mais de uma parte) (o Python roda a cada 5 min,
 // então a hora real fica até 5 minutos antes).
 //   URFA 11335: SAIU -> Sim ...                      -> liquidação daquela operação
 //   Liquidação Endosso: operação 902 (...) saiu da conta -> Sim ...
@@ -45,7 +46,7 @@ export function horariosDosLogs(pasta) {
         primeira[tipo][s[2]] ??= hora;
         continue;
       }
-      if (!conciliadas && CONCILIADAS.test(linha)) conciliadas = hora;
+      if (CONCILIADAS.test(linha)) conciliadas = hora;        // vale a última vez que o valor mudou
     }
     const dia = {};
     for (const tipo of ["urfa", "endosso"]) {

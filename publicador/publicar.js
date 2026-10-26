@@ -16,6 +16,7 @@ import { gerarOperacional, gerarCaixa, gerarRelatorios, gerarDespesas, gerarApre
 import { listarBalancetes, caminhoNuvem, TIPO_CONTEUDO } from "../server/balancetes.js";
 import { listarApresentacoes } from "../server/apresentacoes.js";
 import { listarLaminas } from "../server/laminas.js";
+import { listarFlash } from "../server/flash.js";
 import { arquivoPublicado, lerDespesas } from "../server/despesas.js";
 import { conectar, gravarChaves, apagarChaves, enviarArquivo } from "./nuvem.js";
 import { statusDoDia } from "./bauk.js";
@@ -190,7 +191,10 @@ function recuperarHorariosDosLogs() {
   let novos = 0;
   for (const [iso, horas] of Object.entries(doLog)) {
     const reg = horarios[iso] || (horarios[iso] = { visto: {}, vistoEm: 0, horas: {} });
-    for (const [k, h] of Object.entries(horas)) if (!reg.horas[k]) { reg.horas[k] = h; novos++; }
+    for (const [k, h] of Object.entries(horas)) {
+      // Baixas Conciliadas: se o valor mudou depois (baixas em mais de uma parte), vale a hora mais tarde
+      if (!reg.horas[k] || (k === "conciliadas" && h > reg.horas[k])) { reg.horas[k] = h; novos++; }
+    }
   }
   if (novos) {
     log(`Horários recuperados dos registros do preenchimento: ${novos}.`);
@@ -220,14 +224,20 @@ function observarEtapas(brutas) {
     reg.visto[p.id] = p.status;
   }
   // Baixas Conciliadas: hora em que o valor do dia apareceu (saiu de "aguardando")
-  const conc = dia.valores?.baixasConciliadas == null ? "aguardando" : "ok";
+  // e, se o valor mudar depois (baixas que chegam em mais de uma parte), a hora da última mudança.
+  const valorConc = dia.valores?.baixasConciliadas ?? null;
+  const conc = valorConc == null ? "aguardando" : "ok";
   const antesConc = reg.visto.conciliadas;
-  if (conc === "ok" && antesConc && antesConc !== "ok" && recente && !reg.horas.conciliadas) {
+  const valorAntes = reg.visto.conciliadasValor;
+  if (conc === "ok" && antesConc && recente &&
+      ((antesConc !== "ok" && !reg.horas.conciliadas) ||
+       (antesConc === "ok" && valorAntes != null && valorAntes !== valorConc))) {
     reg.horas.conciliadas = hhmm;
     mudou = true;
-    log(`Baixas Conciliadas: preenchidas às ${hhmm}.`);
+    log(`Baixas Conciliadas: ${antesConc === "ok" ? "valor atualizado" : "preenchidas"} às ${hhmm}.`);
   }
   reg.visto.conciliadas = conc;
+  reg.visto.conciliadasValor = valorConc;
   reg.vistoEm = agoraLocal.getTime();
   // guarda só os últimos 120 dias
   for (const k of Object.keys(horarios).sort().slice(0, -120)) delete horarios[k];
@@ -292,6 +302,17 @@ export async function publicar({ tudo = false } = {}) {
     }
   } catch (e) { aviso(`Lâminas: ${e.message}`); }
 
+  // Flash Report: pastas "AAAA.MM", um PDF por mês (mesmo formato das apresentações)
+  let flash = null;
+  try {
+    const r = await listarFlash(config.flashPublicado);
+    flash = r.itens;
+    Object.assign(mapa, gerarApresentacoes(r.itens, "rel:flash"));
+    for (const n of r.ignorados) {
+      if (!avisadosApr.has(`f:${n}`)) { avisadosApr.add(`f:${n}`); aviso(`Flash Report: ${n} ignorado (use pastas "AAAA.MM" com o PDF dentro).`); }
+    }
+  } catch (e) { aviso(`Flash Report: ${e.message}`); }
+
   // Balancete e Razão: subpastas por mês na pasta de publicados
   let balancetes = null;
   try {
@@ -337,6 +358,14 @@ export async function publicar({ tudo = false } = {}) {
     if (!tudo && arquivos[chave] === l.mtimeMs) continue;
     await enviarArquivo(sb, `laminas/${l.id}.pdf`, fs.readFileSync(l.caminho), "application/pdf");
     arquivos[chave] = l.mtimeMs;
+    enviados++;
+  }
+
+  for (const f of flash || []) {
+    const chave = `flash:${f.id}`;
+    if (!tudo && arquivos[chave] === f.mtimeMs) continue;
+    await enviarArquivo(sb, `flash/${f.id}.pdf`, fs.readFileSync(f.caminho), "application/pdf");
+    arquivos[chave] = f.mtimeMs;
     enviados++;
   }
 
@@ -397,6 +426,13 @@ async function assinatura() {
     }
   } catch { partes.push("sem-laminas"); }
   try {
+    for (const d of fs.readdirSync(config.flashPublicado).sort()) {
+      const dir = path.join(config.flashPublicado, d);
+      if (!fs.statSync(dir).isDirectory()) continue;
+      for (const n of fs.readdirSync(dir).sort()) partes.push(`f:${d}/${n}:${fs.statSync(path.join(dir, n)).mtimeMs}`);
+    }
+  } catch { partes.push("sem-flash"); }
+  try {
     for (const d of fs.readdirSync(config.balancetesPublicado).sort()) {
       const dir = path.join(config.balancetesPublicado, d);
       if (!fs.statSync(dir).isDirectory()) continue;
@@ -425,6 +461,7 @@ async function vigiar() {
   log(`Apresentações: ${config.apresentacoesPublicado}`);
   log(`Balancete e Razão: ${config.balancetesPublicado}`);
   log(`Lâminas: ${config.laminasPublicado}`);
+  log(`Flash Report: ${config.flashPublicado}`);
   log(`Chegada dos arquivos RPE: ${config.rpeChegadas}`);
   log(`Carteira em Dia: ${config.carteiraHistorico}`);
   try {
