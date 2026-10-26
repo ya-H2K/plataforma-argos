@@ -32,16 +32,11 @@ export default function VisorPdf({ carregar, titulo = "PDF" }) {
         if (cancelado) return;
         setEstado({ carregando: false, erro: null, paginas: doc.numPages, quadro: null });
         const largura = Math.min(caixa.current?.clientWidth || 900, 920);
-        // Desenha com sobra de resolução (2x a 3x a tela): texto e gráficos pequenos ficam nítidos.
-        const escalaTela = Math.min(Math.max((window.devicePixelRatio || 1) * 1.5, 2), 3);
+        const escalaTela = Math.min(window.devicePixelRatio || 1, 2);
         for (let n = 1; n <= doc.numPages && !cancelado; n++) {
           const pagina = await doc.getPage(n);
           const base = pagina.getViewport({ scale: 1 });
-          // limite de ~16 milhões de pixels por página (acima disso alguns navegadores falham)
-          let escala = (largura / base.width) * escalaTela;
-          const maxEscala = Math.sqrt(16e6 / (base.width * base.height));
-          if (escala > maxEscala) escala = maxEscala;
-          const viewport = pagina.getViewport({ scale: escala });
+          const viewport = pagina.getViewport({ scale: (largura / base.width) * escalaTela });
           const canvas = document.createElement("canvas");
           canvas.width = Math.floor(viewport.width);
           canvas.height = Math.floor(viewport.height);
