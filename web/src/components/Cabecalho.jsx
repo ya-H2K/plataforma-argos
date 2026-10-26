@@ -99,7 +99,7 @@ export function Sincronia({ ultima, proxima, atualizando, falhou, onAtualizar })
   let info = null;
   if (atualizando) info = "Atualizando…";
   else if (falhou) info = "Não foi possível atualizar. Tentando de novo em instantes.";
-  else info = <>Atualizado às {hhmm(ultima)}.<span className="sync__proxima"> Próxima às {hhmm(proxima)}.</span></>;
+  else info = <>Atualizado às {hhmm(ultima)}.</>;
   return (
     <div className="sync" aria-live="polite">
       <span className={`sync__info${falhou ? " sync__info--falha" : ""}`}>{info}</span>
