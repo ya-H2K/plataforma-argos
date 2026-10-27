@@ -5,6 +5,7 @@ import Despesas from "./Despesas.jsx";
 import Apresentacoes from "./Apresentacoes.jsx";
 import Balancetes from "./Balancetes.jsx";
 import Carteira from "./Carteira.jsx";
+import ResumoBaixas from "./ResumoBaixas.jsx";
 import { useSessao } from "../sessao.js";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, curta, valorNum } from "../formato.js";
@@ -24,6 +25,9 @@ export const RELATORIOS = [
   // (tabela relatorio_acesso, chave "restrito:carteira"); manter as duas listas iguais.
   { id: "carteira", nome: "Carteira em Dia", descricao: "Valor presente a vencer do estoque, dia a dia.",
     emails: ["lucas.ramao@voxcred.com.br"] },
+  // Resumo de Baixas: por enquanto só o admin (tabela relatorio_acesso, relatorio = 'baixas', vazia).
+  { id: "baixas", nome: "Resumo de Baixas", descricao: "Baixas importadas no dia, por tipo de baixa.",
+    emails: [] },
 ];
 // Relatórios que a pessoa logada pode abrir.
 export const relatoriosDe = (usuario) => RELATORIOS.filter((r) =>
@@ -50,6 +54,7 @@ export default function Relatorios({ aba, onAba }) {
   const voltar = (id) => () => abrir(RELATORIOS.find((r) => r.id === id)?.emails ? "restritos" : null);
 
   if (sub === "carteira" && lista.some((r) => r.id === "carteira")) return <Carteira aba={aba} onAba={onAba} onVoltar={voltar("carteira")} />;
+  if (sub === "baixas" && lista.some((r) => r.id === "baixas")) return <ResumoBaixas aba={aba} onAba={onAba} onVoltar={voltar("baixas")} />;
   if (sub === "desagio") return <Desagio aba={aba} onAba={onAba} onVoltar={voltar("desagio")} />;
   if (sub === "balancetes") return <Balancetes aba={aba} onAba={onAba} onVoltar={voltar("balancetes")} />;
   if (sub === "laminas") return <Apresentacoes key="laminas" tipo="laminas" aba={aba} onAba={onAba} onVoltar={voltar("laminas")} />;

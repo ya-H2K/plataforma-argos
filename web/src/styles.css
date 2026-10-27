@@ -1120,3 +1120,27 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .relatorio-item__acesso { display: grid; gap: .15rem; margin-top: .2rem; padding-top: .6rem; border-top: 1px solid var(--line); font-size: .75rem; color: var(--text-dim); }
 .relatorio-item__acesso b { font-weight: 400; color: var(--text); overflow-wrap: anywhere; }
 @media (max-width: 700px) { .abas-relatorios { gap: 1.4rem; margin-top: 0; } }
+
+/* ================================================================ resumo de baixas (restrito) */
+.resumo-baixas { max-width: 640px; gap: 0; padding: 0; min-height: 0; }
+.resumo-baixas dl { margin: 0; }
+.resumo-baixas__topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; padding: 1.8rem 2rem 1.6rem; background: var(--realce); border-bottom: 1px solid var(--line); }
+.resumo-baixas__topo dt { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
+.resumo-baixas__topo dd { margin: .35rem 0 0; font-weight: 600; line-height: 1.1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.resumo-baixas__total dd { font-size: clamp(1.6rem, 4.5vw, 2.4rem); color: var(--gold-bright); }
+.resumo-baixas__qtd { text-align: right; padding-left: 2rem; border-left: 1px solid var(--line); }
+.resumo-baixas__qtd dd { font-size: 1.8rem; color: var(--text); }
+.resumo-baixas__lista { padding: .4rem 2rem 1rem; }
+.resumo-baixas__linha { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .9rem 0; border-bottom: 1px solid var(--line); }
+.resumo-baixas__linha:last-child { border-bottom: 0; }
+.resumo-baixas__linha dt { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; font-size: 1rem; }
+.resumo-baixas__linha dt small { color: var(--text-dim); font-size: .78rem; }
+.resumo-baixas__linha dd { margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.resumo-baixas__linha--alerta dt, .resumo-baixas__linha--alerta dd { color: var(--nao_realizado); }
+.resumo-baixas__hora { margin: .7rem 0 0; color: var(--text-dim); font-size: .75rem; }
+.resumo-baixas__erro { flex-basis: 100%; text-align: right; color: var(--nao_realizado); font-size: .78rem; }
+@media (max-width: 560px) {
+  .resumo-baixas__topo { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.4rem 1.25rem; }
+  .resumo-baixas__qtd { text-align: left; padding-left: 0; border-left: 0; }
+  .resumo-baixas__lista { padding: .2rem 1.25rem .8rem; }
+}

@@ -145,6 +145,26 @@ export const apiRelatorios = {
       meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
   },
 
+  // Resumo de Baixas (restrito): um resumo por dia das baixas importadas (pasta "com financeiro").
+  // O banco só entrega ao admin e aos e-mails liberados em relatorio_acesso ("baixas").
+  baixas: async () => {
+    const r = await lerPainel(["restrito:baixas", "inicio"]);
+    if (!r["restrito:baixas"]) throw Object.assign(new Error("O Resumo de Baixas ainda não foi publicado."), { status: 404 });
+    return { dias: r["restrito:baixas"].dias || [], hoje: agoraBrasilia().iso,
+      meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
+  },
+  // Excel do dia (com CPF): a pasta "restrito/" do Storage só abre para quem tem o relatório liberado.
+  baixarBaixas: async (dia) => {
+    const { data, error } = await supabase.storage.from("caixa").createSignedUrl(`restrito/baixas/${dia.data}.xlsx`, 60, { download: dia.excel });
+    if (error || !data?.signedUrl) throw erroDe(error, "Excel indisponível no momento.");
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  },
+
   // Todas as remessas da aba Deságio (o filtro de período é feito na tela).
   desagio: async () => {
     const r = await lerPainel(["rel:desagio", "inicio"]);
