@@ -3,17 +3,14 @@ import { apiRelatorios } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { ano, brl, diaMes, diaSemana, num } from "../formato.js";
-import SeletorMes from "./SeletorMes.jsx";
 
 // Relatório restrito "Resumo de Baixas": o que foi IMPORTADO (arquivos da pasta "com financeiro"),
 // separado pela classificação do arquivo. Não é o valor conciliado.
 // A automação do PC (C:\Automacao\Vox\resumo_baixas.py) grava um resumo por dia; o publicador manda
 // todos na chave "restrito:baixas" (só o admin e os e-mails liberados em relatorio_acesso recebem).
-// Filtro: um dia, um mês ou um período dentro de um mesmo mês (o Excel nunca passa de um mês).
+// Filtro: um dia ou um período dentro de um mesmo mês (o Excel nunca passa de um mês).
 
 const ORDEM = ["Baixas padrão do dia", "Baixa de vencidos", "Baixa manual", "Baixa Bauk ajustada", "Ajuste", "Não reconhecido"];
-const NOMES_MES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-const rotuloMes = (id) => `${NOMES_MES[Number(id.slice(5, 7)) - 1]} ${id.slice(0, 4)}`;
 const dataBr = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
 const ultimoDia = (mes) => {
   const [a, m] = mes.split("-").map(Number);
@@ -87,9 +84,8 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
   const [dados, setDados] = useState(null);
   const [erro, setErro] = useState(null);
   const [meta, setMeta] = useState(null);
-  const [modo, setModo] = useState("dia");             // "dia" | "mes" | "periodo"
+  const [modo, setModo] = useState("dia");             // "dia" | "periodo"
   const [dia, setDia] = useState(null);
-  const [mes, setMes] = useState(null);
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
   const [baixando, setBaixando] = useState(false);
@@ -104,7 +100,6 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
       // padrão: hoje, se já tiver baixas; senão, o último dia com baixas
       const inicial = r.dias.some((d) => d.data === r.hoje) ? r.hoje : r.dias.at(-1)?.data ?? r.hoje;
       setDia((s) => s ?? inicial);
-      setMes((s) => s ?? inicial.slice(0, 7));
     } catch (e) {
       setErro(e.message);
       throw e;
@@ -115,36 +110,27 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
 
   const dias = useMemo(() => [...(dados?.dias || [])].sort((a, b) => a.data.localeCompare(b.data)), [dados]);
   const hoje = dados?.hoje || "";
-  const meses = useMemo(() => [...new Set(dias.map((d) => d.data.slice(0, 7)))].sort(), [dias]);
 
   // ---- intervalo escolhido
   const periodoIncompleto = modo === "periodo" && (!de || !ate);
   const periodoInvalido = modo === "periodo" && de && ate && de > ate;
-  const [ini, fim] = modo === "dia" ? [dia, dia]
-    : modo === "mes" ? (mes ? [`${mes}-01`, ultimoDia(mes)] : [null, null])
-    : [de, ate];
+  const [ini, fim] = modo === "dia" ? [dia, dia] : [de, ate];
   const doIntervalo = useMemo(() => (ini && fim && ini <= fim ? dias.filter((d) => d.data >= ini && d.data <= fim) : []), [dias, ini, fim]);
   const total = useMemo(() => somar(doIntervalo), [doIntervalo]);
   const diaSel = modo === "dia" ? doIntervalo[0] : null;
 
   const titulo = modo === "dia" ? (dia ? `${diaSemana(dia)}, ${diaMes(dia)} de ${ano(dia)}` : "")
-    : modo === "mes" ? (mes ? rotuloMes(mes) : "")
     : de && ate ? `De ${dataBr(de)} a ${dataBr(ate)}` : "Escolha o período";
-  const rotuloTotal = { dia: "Baixas importadas no dia", mes: "Baixas importadas no mês", periodo: "Baixas importadas no período" }[modo];
-  const nomeExcel = modo === "dia" ? `Resumo_Baixas_${dia}.xlsx`
-    : modo === "mes" ? `Resumo_Baixas_${mes}.xlsx` : `Resumo_Baixas_${de}_a_${ate}.xlsx`;
+  const rotuloTotal = modo === "dia" ? "Baixas importadas no dia" : "Baixas importadas no período";
+  const nomeExcel = modo === "dia" ? `Resumo_Baixas_${dia}.xlsx` : `Resumo_Baixas_${de}_a_${ate}.xlsx`;
 
   // ---- navegação
   const diaAnt = dia ? dias.filter((d) => d.data < dia).at(-1)?.data : null;
   const diaProx = dia ? dias.find((d) => d.data > dia)?.data : null;
-  const iMes = meses.indexOf(mes);
-  const mesAnt = iMes > 0 ? meses[iMes - 1] : (iMes < 0 ? meses.filter((m) => m < mes).at(-1) : null);
-  const mesProx = iMes >= 0 && iMes < meses.length - 1 ? meses[iMes + 1] : (iMes < 0 ? meses.find((m) => m > mes) : null);
 
   const trocarModo = (m) => {
     if (m === modo) return;
     const base = dia || hoje;
-    if (m === "mes") setMes(base.slice(0, 7));
     if (m === "periodo" && !de && !ate) { setDe(`${base.slice(0, 7)}-01`); setAte(base); }
     setModo(m);
     setErroBaixar(null);
@@ -176,7 +162,7 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
           <div className="cabeca-pagina__direita filtro-relatorio resumo-baixas__filtro">
             <nav className="navegacao" aria-label="Escolher o período">
               <span className="contexto__seg" role="group" aria-label="Tipo de filtro">
-                {[["dia", "Dia"], ["mes", "Mês"], ["periodo", "Período"]].map(([id, nome]) => (
+                {[["dia", "Dia"], ["periodo", "Período"]].map(([id, nome]) => (
                   <button key={id} type="button" className={modo === id ? "on" : undefined} aria-pressed={modo === id}
                     onClick={() => trocarModo(id)}>{nome}</button>
                 ))}
@@ -187,13 +173,6 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
                   <input type="date" value={dia || ""} aria-label="Dia" min={dias[0]?.data} max={hoje}
                     onChange={(e) => e.target.value && setDia(e.target.value)} />
                   <button type="button" className="btn-icone" onClick={() => setDia(diaProx)} disabled={!diaProx} aria-label="Próximo dia">›</button>
-                </>
-              )}
-              {modo === "mes" && (
-                <>
-                  <button type="button" className="btn-icone" onClick={() => setMes(mesAnt)} disabled={!mesAnt} aria-label="Mês anterior">‹</button>
-                  <SeletorMes meses={meses} valor={mes} onChange={setMes} rotulo={rotuloMes} />
-                  <button type="button" className="btn-icone" onClick={() => setMes(mesProx)} disabled={!mesProx} aria-label="Próximo mês">›</button>
                 </>
               )}
               {modo === "periodo" && (
@@ -223,7 +202,7 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
         ) : periodoInvalido ? (
           <p className="vazio">A data inicial é depois da data final.</p>
         ) : !doIntervalo.length ? (
-          <p className="vazio">Nenhuma baixa importada {modo === "dia" ? "neste dia" : modo === "mes" ? "neste mês" : "neste período"}.</p>
+          <p className="vazio">Nenhuma baixa importada {modo === "dia" ? "neste dia" : "neste período"}.</p>
         ) : (
           <>
             <section className="card resumo-baixas" aria-label={rotuloTotal}>
