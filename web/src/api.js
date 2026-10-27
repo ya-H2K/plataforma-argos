@@ -1,6 +1,7 @@
 // Acesso aos dados do site online. As funções têm os MESMOS nomes e devolvem o MESMO
 // formato da API antiga (servidor Node), então as telas continuam iguais.
 // Os dados vêm do Supabase, enviados pelo publicador do PC (publicador/publicar.js).
+import { gunzipSync, strFromU8 } from "fflate";
 import { supabase } from "./supabase.js";
 import { SESSAO_HORAS } from "./config-publica.js";
 
@@ -152,7 +153,17 @@ export const apiRelatorios = {
     const r = await lerPainel(["restrito:baixas", "inicio"]);
     if (!r["restrito:baixas"]) throw Object.assign(new Error("O Resumo de Baixas ainda não foi publicado."), { status: 404 });
     return { dias: r["restrito:baixas"].dias || [], hoje: agoraBrasilia().iso,
+      detalheDesde: r["restrito:baixas"].detalheDesde || null, manterMeses: r["restrito:baixas"].manterMeses || null,
       meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
+  },
+  // Títulos de um dia (tem CPF): restrito/baixas/titulos/AAAA-MM-DD.json.gz, pasta do Storage que só
+  // abre para quem tem o relatório liberado. Vem compactado (gzip).
+  baixasTitulos: async (iso) => {
+    const { data, error } = await supabase.storage.from("caixa").download(`restrito/baixas/titulos/${iso}.json.gz`);
+    if (error || !data) throw erroDe(error, "Os títulos deste período estão indisponíveis no momento.");
+    let bytes = new Uint8Array(await data.arrayBuffer());
+    if (bytes[0] === 0x1f && bytes[1] === 0x8b) bytes = gunzipSync(bytes);
+    return JSON.parse(strFromU8(bytes));
   },
 
   // Todas as remessas da aba Deságio (o filtro de período é feito na tela).

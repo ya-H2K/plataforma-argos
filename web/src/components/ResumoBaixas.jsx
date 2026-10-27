@@ -3,6 +3,7 @@ import { apiRelatorios } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { ano, brl, diaMes, diaSemana, num } from "../formato.js";
+import { gerarXlsx, LIMITE_LINHAS_EXCEL } from "../xlsx.js";
 
 // Relatório restrito "Resumo de Baixas": o que foi IMPORTADO (arquivos da pasta "com financeiro"),
 // separado pela classificação do arquivo. Não é o valor conciliado.
@@ -39,38 +40,61 @@ function somar(dias) {
   };
 }
 
-// Excel simples: Data | Arquivo | Tipo de baixa | Classificação | Valor (R$).
-async function baixarExcel(dias, nomeArquivo) {
-  const mod = await import("exceljs");
-  const ExcelJS = mod.default ?? mod;
-  const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet("Baixas", { views: [{ state: "frozen", ySplit: 1, showGridLines: false }] });
-  ws.columns = [
-    { header: "Data", key: "data", width: 12, style: { numFmt: "dd/mm/yyyy" } },
-    { header: "Arquivo", key: "arquivo", width: 46 },
-    { header: "Tipo de baixa", key: "tipoBaixa", width: 14 },
-    { header: "Classificação", key: "classificacao", width: 24 },
-    { header: "Valor (R$)", key: "valor", width: 18, style: { numFmt: "#,##0.00" } },
-  ];
-  for (const d of dias) {
-    const [a, m, dd] = d.data.split("-").map(Number);
-    for (const l of d.linhas || []) {
-      ws.addRow({ data: new Date(Date.UTC(a, m - 1, dd)), arquivo: l.arquivo, tipoBaixa: l.tipoBaixa,
-        classificacao: l.classificacao, valor: l.valor });
+// Excel título a título (igual ao relatório de antes, sem o nome do sacado) + de onde veio cada título:
+// DATA | SEU_NUMERO | NU_DOCUMENTO | CPF_SACADO | VENCIMENTO | VALOR_PAGO | TIPO_BAIXA | ARQUIVO | CLASSIFICACAO.
+// Os títulos de cada dia ficam na pasta restrita do Storage (um arquivo por dia); o Excel é montado aqui.
+const COLUNAS = [
+  { titulo: "DATA", largura: 12, tipo: "data" },
+  { titulo: "SEU_NUMERO", largura: 20 },
+  { titulo: "NU_DOCUMENTO", largura: 15 },
+  { titulo: "CPF_SACADO", largura: 16 },
+  { titulo: "VENCIMENTO", largura: 13, tipo: "data" },
+  { titulo: "VALOR_PAGO", largura: 14, tipo: "valor" },
+  { titulo: "TIPO_BAIXA", largura: 12 },
+  { titulo: "ARQUIVO", largura: 46 },
+  { titulo: "CLASSIFICACAO", largura: 22 },
+];
+
+function* linhasDoExcel(detalhes) {
+  for (const det of detalhes) {
+    for (const [seu, doc, cpf, venc, centavos, iTipo, iArq] of det.linhas) {
+      const arq = det.arquivos[iArq] || {};
+      yield [det.data, seu, doc, cpf, venc, centavos / 100, det.tipos[iTipo], arq.arquivo, arq.classificacao];
     }
   }
+}
 
-  // sem linha de total e sem linhas de grade/bordas: só o cabeçalho escuro e os dados
-  const cab = ws.getRow(1);
-  cab.font = { bold: true, color: { argb: "FFFFFFFF" } };
-  cab.eachCell((c, i) => {
-    c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F1B14" } };
-    c.alignment = { horizontal: i === 5 ? "right" : "left" };
+const br = (iso) => iso.split("-").reverse().join("/");
+
+async function baixarExcel(dias, nomeArquivo, aoAndamento, guarda) {
+  // o título a título fica no Supabase por um tempo (padrão 12 meses); o resumo da tela fica sempre
+  const antigos = guarda?.desde ? dias.filter((d) => d.data < guarda.desde) : [];
+  if (antigos.length) {
+    throw Object.assign(new Error(`O Excel título a título fica disponível só para os últimos ${guarda.meses || 12} meses (desde ${br(guarda.desde)}).`), { paraTela: true });
+  }
+  const faltando = dias.filter((d) => !d.detalhe);
+  if (faltando.length) {
+    throw Object.assign(new Error(`O detalhe de ${faltando.map((d) => br(d.data)).join(", ")} ainda está sendo enviado. Tente em alguns minutos.`), { paraTela: true });
+  }
+  const total = dias.reduce((t, d) => t + (d.titulos || 0), 0);
+  if (total > LIMITE_LINHAS_EXCEL) throw Object.assign(new Error("O período tem mais títulos do que cabe numa planilha. Escolha um período menor."), { paraTela: true });
+
+  // baixa os dias (4 de cada vez) e mantém a ordem das datas
+  const detalhes = new Array(dias.length);
+  let feitos = 0;
+  aoAndamento(`Baixando 0/${dias.length}`);
+  for (let i = 0; i < dias.length; i += 4) {
+    await Promise.all(dias.slice(i, i + 4).map(async (d, k) => {
+      detalhes[i + k] = await apiRelatorios.baixasTitulos(d.data);
+      aoAndamento(`Baixando ${++feitos}/${dias.length}`);
+    }));
+  }
+
+  const blob = await gerarXlsx({
+    aba: "Baixas", colunas: COLUNAS, linhas: linhasDoExcel(detalhes),
+    aoProgresso: (n) => aoAndamento(`Gerando ${Math.min(99, Math.round((n / Math.max(total, 1)) * 100))}%`),
   });
-  ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: ws.rowCount, column: 5 } };
-
-  const buf = await wb.xlsx.writeBuffer();
-  const url = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+  const url = URL.createObjectURL(blob);
   const el = document.createElement("a");
   el.href = url;
   el.download = nomeArquivo;
@@ -88,7 +112,7 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
   const [dia, setDia] = useState(null);
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
-  const [baixando, setBaixando] = useState(false);
+  const [baixando, setBaixando] = useState(null);         // texto do andamento enquanto gera o Excel
   const [erroBaixar, setErroBaixar] = useState(null);
 
   const buscar = useCallback(async () => {
@@ -142,11 +166,11 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
   };
 
   const baixar = async () => {
-    setBaixando(true);
+    setBaixando("Preparando…");
     setErroBaixar(null);
-    try { await baixarExcel(doIntervalo, nomeExcel); }
-    catch { setErroBaixar("Não foi possível gerar o Excel. Tente de novo."); }
-    finally { setBaixando(false); }
+    try { await baixarExcel(doIntervalo, nomeExcel, setBaixando, { desde: dados?.detalheDesde, meses: dados?.manterMeses }); }
+    catch (e) { setErroBaixar(e?.paraTela || e?.status ? e.message : "Não foi possível gerar o Excel. Tente de novo."); }
+    finally { setBaixando(null); }
   };
 
   return (
@@ -186,7 +210,7 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
             </nav>
             <button type="button" className="button button--pequeno publicacao__baixar"
               disabled={!doIntervalo.length || baixando || periodoInvalido} onClick={baixar}>
-              <span aria-hidden="true">↓</span> {baixando ? "Gerando…" : "Baixar Excel"}
+              <span aria-hidden="true">↓</span> {baixando || "Baixar Excel"}
             </button>
             {modo === "periodo" && <span className="resumo-baixas__dica">O período vai até, no máximo, o fim do mês da data inicial.</span>}
             {erroBaixar && <span className="resumo-baixas__erro" role="alert">{erroBaixar}</span>}

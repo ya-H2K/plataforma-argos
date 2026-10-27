@@ -171,10 +171,64 @@ function lerCarteira() {
 }
 
 // ---------- Resumo de Baixas (relatório restrito) ----------
-// A automação resumo_baixas.py (C:\Automacao\Vox) grava resumo_baixas\AAAA-MM-DD.json, um por dia: baixas
-// importadas na pasta "com financeiro", por classificação, e uma linha por arquivo e tipo de baixa
-// (TOTAL/PARCIAL), que o Argos usa para montar o Excel do dia, do mês ou do período.
-// Vai na chave "restrito:baixas" (admin + e-mails de relatorio_acesso com relatorio = 'baixas').
+// A automação resumo_baixas.py (C:\Automacao\Vox) grava, por dia, resumo_baixas\AAAA-MM-DD.json (baixas
+// importadas na pasta "com financeiro", por classificação) e resumo_baixas\titulos\AAAA-MM-DD.json.gz
+// (título a título, com CPF), que o Argos usa para montar o Excel do dia ou do período.
+// O resumo vai na chave "restrito:baixas" (admin + e-mails de relatorio_acesso com relatorio = 'baixas').
+// O título a título vai para restrito/baixas/titulos/AAAA-MM-DD.json.gz no Storage, só depois do
+// supabase/relatorios-baixas.sql, que fecha a pasta "restrito/" para quem não tem o relatório liberado.
+let arquivosRestritosOk = false;
+let avisouArquivosRestritos = false;
+async function conferirArquivosRestritos(sb) {
+  if (arquivosRestritosOk) return true;
+  const { error } = await sb.rpc("vox_restritos_arquivos");
+  arquivosRestritosOk = !error;
+  if (!arquivosRestritosOk && !avisouArquivosRestritos) {
+    avisouArquivosRestritos = true;
+    aviso("Resumo de Baixas: rode o supabase/relatorios-baixas.sql no Supabase; até lá o Excel título a título não é enviado.");
+  }
+  return arquivosRestritosOk;
+}
+// Data a partir da qual o título a título fica no Storage (BAIXAS_MANTER_MESES, padrão 12 meses).
+function corteBaixas() {
+  const d = agora();
+  d.setMonth(d.getMonth() - config.baixasManterMeses);
+  return isoLocal(d);
+}
+// Limpeza (uma vez por dia): apaga do Storage o título a título mais antigo que o corte e os Excels da
+// 1ª versão do relatório (restrito/baixas/*.xlsx, não são mais usados). Devolve quantos apagou.
+let limpezaBaixasEm = null;
+async function limparBaixasAntigas(sb, arquivos) {
+  const hoje = isoLocal(agora());
+  if (limpezaBaixasEm === hoje) return 0;
+  const corte = corteBaixas();
+  const apagar = [];
+  for (const pasta of ["restrito/baixas/titulos", "restrito/baixas"]) {
+    for (let offset = 0; ; offset += 1000) {
+      const { data, error } = await sb.storage.from("caixa").list(pasta, { limit: 1000, offset });
+      if (error) throw new Error(`Supabase (listar ${pasta}): ${error.message}`);
+      for (const f of data || []) {
+        if (!f.id) continue;                                               // subpasta
+        const dia = f.name.match(/^(\d{4}-\d{2}-\d{2})\.json\.gz$/)?.[1];
+        if ((pasta.endsWith("titulos") && dia && dia < corte) || (pasta === "restrito/baixas" && /\.xlsx$/i.test(f.name))) {
+          apagar.push(`${pasta}/${f.name}`);
+        }
+      }
+      if (!data || data.length < 1000) break;
+    }
+  }
+  for (let i = 0; i < apagar.length; i += 500) {
+    const { error } = await sb.storage.from("caixa").remove(apagar.slice(i, i + 500));
+    if (error) throw new Error(`Supabase (apagar arquivos antigos): ${error.message}`);
+  }
+  for (const k of Object.keys(arquivos)) {
+    if (k.startsWith("bx:") || (k.startsWith("bxt:") && k.slice(4) < corte)) delete arquivos[k];
+  }
+  limpezaBaixasEm = hoje;
+  if (apagar.length) log(`Resumo de Baixas: ${apagar.length} arquivo(s) antigo(s) apagado(s) do Supabase (guarda desde ${corte.split("-").reverse().join("/")}).`);
+  return apagar.length;
+}
+
 function lerResumoBaixas() {
   let nomes;
   try { nomes = fs.readdirSync(config.resumoBaixas); } catch { return null; }   // a automação nunca rodou
@@ -182,10 +236,14 @@ function lerResumoBaixas() {
   for (const n of nomes.filter((x) => /^\d{4}-\d{2}-\d{2}\.json$/.test(x)).sort()) {
     try {
       const j = JSON.parse(fs.readFileSync(path.join(config.resumoBaixas, n), "utf-8"));
-      if (!(j.versao >= 2)) continue;                // formato antigo: a automação refaz na próxima rodada
+      if (!(j.versao >= 3)) continue;                // formato antigo: a automação refaz na próxima rodada
+      let detalhe = null;
+      if (j.detalhe && j.data >= corteBaixas()) {                  // mais antigo que o corte: não sobe
+        const caminho = path.join(config.resumoBaixas, "titulos", j.detalhe);
+        try { const st = fs.statSync(caminho); if (st.isFile()) detalhe = { caminho, mtimeMs: st.mtimeMs }; } catch { /* ainda não gravado */ }
+      }
       dias.push({ data: j.data, valor: j.valor, arquivos: j.arquivos, titulos: j.titulos, gerado: j.gerado || null,
-        classificacoes: (j.classificacoes || []).map(({ classificacao, arquivos, valor }) => ({ classificacao, arquivos, valor })),
-        linhas: (j.linhas || []).map(({ arquivo, tipoBaixa, classificacao, titulos, valor }) => ({ arquivo, tipoBaixa, classificacao, titulos, valor })) });
+        classificacoes: (j.classificacoes || []).map(({ classificacao, arquivos, valor }) => ({ classificacao, arquivos, valor })), detalhe });
     } catch { /* sendo gravado: pega na próxima volta */ }
   }
   return dias;
@@ -294,9 +352,13 @@ export async function publicar({ tudo = false } = {}) {
   const carteira = lerCarteira();
   if (carteira && await conferirRestritos(sb)) mapa["restrito:carteira"] = carteira;
 
-  // Resumo de Baixas (restrito)
+  // Resumo de Baixas (restrito): o resumo vai na chave; o título a título, para a pasta restrita do Storage
   const baixas = lerResumoBaixas();
-  if (baixas && await conferirRestritos(sb)) mapa["restrito:baixas"] = { dias: baixas };
+  const detalheBaixasOk = Boolean(baixas?.length) && await conferirArquivosRestritos(sb);
+  if (baixas && await conferirRestritos(sb)) {
+    mapa["restrito:baixas"] = { detalheDesde: corteBaixas(), manterMeses: config.baixasManterMeses,
+      dias: baixas.map(({ detalhe, ...d }) => ({ ...d, detalhe: Boolean(detalheBaixasOk && detalhe) })) };
+  }
 
   // Despesas: o arquivo mais recente da pasta de publicados
   let despesasArq = null;
@@ -406,7 +468,25 @@ export async function publicar({ tudo = false } = {}) {
     }
   }
 
-  if (!mudadas.length && !apagadas.length && !enviados) return { mudadas: 0, apagadas: 0, enviados: 0 };
+  // Título a título do Resumo de Baixas (um arquivo por dia): só os que mudaram
+  if (detalheBaixasOk && mapa["restrito:baixas"]) {
+    for (const d of baixas) {
+      if (!d.detalhe) continue;
+      const chave = `bxt:${d.data}`;
+      if (!tudo && arquivos[chave] === d.detalhe.mtimeMs) continue;
+      await enviarArquivo(sb, `restrito/baixas/titulos/${d.data}.json.gz`, fs.readFileSync(d.detalhe.caminho), "application/gzip");
+      arquivos[chave] = d.detalhe.mtimeMs;
+      enviados++;
+    }
+  }
+
+  // Limpeza do título a título antigo (uma vez por dia); um erro aqui não atrapalha o resto
+  let limpos = 0;
+  if (detalheBaixasOk) {
+    try { limpos = await limparBaixasAntigas(sb, arquivos); } catch (e) { aviso(`Resumo de Baixas (limpeza): ${e.message}`); }
+  }
+
+  if (!mudadas.length && !apagadas.length && !enviados && !limpos) return { mudadas: 0, apagadas: 0, enviados: 0 };
 
   await gravarChaves(sb, Object.fromEntries(mudadas.map((k) => [k, mapa[k]])));
   await apagarChaves(sb, apagadas);
@@ -473,6 +553,7 @@ async function assinatura() {
       if (n.endsWith(".json")) partes.push(`bx:${n}:${fs.statSync(path.join(config.resumoBaixas, n)).mtimeMs}`);
     }
   } catch { partes.push("sem-baixas"); }
+  partes.push(arquivosRestritosOk ? "arquivos-restritos" : "sem-arquivos-restritos");
   partes.push(restritosOk ? "restritos" : "sem-restritos");
   partes.push(hash(statusBaukParaBases()), hash(dataBauk), hash(horasEtapas()));
   return partes.join("|");
@@ -494,7 +575,7 @@ async function vigiar() {
   log(`Flash Report: ${config.flashPublicado}`);
   log(`Chegada dos arquivos RPE: ${config.rpeChegadas}`);
   log(`Carteira em Dia: ${config.carteiraHistorico}`);
-  log(`Resumo de Baixas: ${config.resumoBaixas}`);
+  log(`Resumo de Baixas: ${config.resumoBaixas} (título a título guardado por ${config.baixasManterMeses} meses)`);
   try {
     const copiados = await prepararPublicados({ pasta: config.caixaPublicado, modeloTrabalho: config.caixaTrabalho, importar: config.caixaImportar });
     if (copiados.length) log(`Fluxo de caixa, cópia inicial: ${copiados.join(", ")}`);
