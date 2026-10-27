@@ -171,23 +171,10 @@ function lerCarteira() {
 }
 
 // ---------- Resumo de Baixas (relatório restrito) ----------
-// A automação resumo_baixas.py (C:\Automacao\Vox) grava resumo_baixas\AAAA-MM-DD.json (um por dia: baixas
-// importadas na pasta "com financeiro", por tipo de baixa) e o Excel do dia em resumo_baixas\excel.
-// O resumo vai na chave "restrito:baixas" (admin + e-mails de relatorio_acesso com relatorio = 'baixas').
-// O Excel tem CPF: vai para restrito/baixas/AAAA-MM-DD.xlsx no Storage só depois do
-// supabase/relatorios-baixas.sql, que fecha a pasta "restrito/" para quem não tem o relatório liberado.
-let arquivosRestritosOk = false;
-let avisouArquivosRestritos = false;
-async function conferirArquivosRestritos(sb) {
-  if (arquivosRestritosOk) return true;
-  const { error } = await sb.rpc("vox_restritos_arquivos");
-  arquivosRestritosOk = !error;
-  if (!arquivosRestritosOk && !avisouArquivosRestritos) {
-    avisouArquivosRestritos = true;
-    aviso("Resumo de Baixas: rode o supabase/relatorios-baixas.sql no Supabase; até lá o Excel do dia não é enviado.");
-  }
-  return arquivosRestritosOk;
-}
+// A automação resumo_baixas.py (C:\Automacao\Vox) grava resumo_baixas\AAAA-MM-DD.json, um por dia: baixas
+// importadas na pasta "com financeiro", por classificação, e uma linha por arquivo e tipo de baixa
+// (TOTAL/PARCIAL), que o Argos usa para montar o Excel do dia, do mês ou do período.
+// Vai na chave "restrito:baixas" (admin + e-mails de relatorio_acesso com relatorio = 'baixas').
 function lerResumoBaixas() {
   let nomes;
   try { nomes = fs.readdirSync(config.resumoBaixas); } catch { return null; }   // a automação nunca rodou
@@ -195,13 +182,10 @@ function lerResumoBaixas() {
   for (const n of nomes.filter((x) => /^\d{4}-\d{2}-\d{2}\.json$/.test(x)).sort()) {
     try {
       const j = JSON.parse(fs.readFileSync(path.join(config.resumoBaixas, n), "utf-8"));
-      let excel = null;
-      if (j.excel) {
-        const caminho = path.join(config.resumoBaixas, "excel", j.excel);
-        try { const st = fs.statSync(caminho); if (st.isFile()) excel = { nome: j.excel, caminho, mtimeMs: st.mtimeMs }; } catch { /* sem Excel */ }
-      }
+      if (!(j.versao >= 2)) continue;                // formato antigo: a automação refaz na próxima rodada
       dias.push({ data: j.data, valor: j.valor, arquivos: j.arquivos, titulos: j.titulos, gerado: j.gerado || null,
-        tipos: (j.tipos || []).map(({ tipo, arquivos, valor }) => ({ tipo, arquivos, valor })), excel });
+        classificacoes: (j.classificacoes || []).map(({ classificacao, arquivos, valor }) => ({ classificacao, arquivos, valor })),
+        linhas: (j.linhas || []).map(({ arquivo, tipoBaixa, classificacao, titulos, valor }) => ({ arquivo, tipoBaixa, classificacao, titulos, valor })) });
     } catch { /* sendo gravado: pega na próxima volta */ }
   }
   return dias;
@@ -310,12 +294,9 @@ export async function publicar({ tudo = false } = {}) {
   const carteira = lerCarteira();
   if (carteira && await conferirRestritos(sb)) mapa["restrito:carteira"] = carteira;
 
-  // Resumo de Baixas: o resumo vai como restrito; o Excel só com a pasta "restrito/" do Storage fechada
+  // Resumo de Baixas (restrito)
   const baixas = lerResumoBaixas();
-  const excelBaixasOk = Boolean(baixas?.length) && await conferirArquivosRestritos(sb);
-  if (baixas && await conferirRestritos(sb)) {
-    mapa["restrito:baixas"] = { dias: baixas.map(({ excel, ...d }) => ({ ...d, excel: excelBaixasOk && excel ? excel.nome : null })) };
-  }
+  if (baixas && await conferirRestritos(sb)) mapa["restrito:baixas"] = { dias: baixas };
 
   // Despesas: o arquivo mais recente da pasta de publicados
   let despesasArq = null;
@@ -425,18 +406,6 @@ export async function publicar({ tudo = false } = {}) {
     }
   }
 
-  // Excel do Resumo de Baixas (um por dia): só os que mudaram
-  if (excelBaixasOk && mapa["restrito:baixas"]) {
-    for (const d of baixas) {
-      if (!d.excel) continue;
-      const chave = `bx:${d.data}`;
-      if (!tudo && arquivos[chave] === d.excel.mtimeMs) continue;
-      await enviarArquivo(sb, `restrito/baixas/${d.data}.xlsx`, fs.readFileSync(d.excel.caminho));
-      arquivos[chave] = d.excel.mtimeMs;
-      enviados++;
-    }
-  }
-
   if (!mudadas.length && !apagadas.length && !enviados) return { mudadas: 0, apagadas: 0, enviados: 0 };
 
   await gravarChaves(sb, Object.fromEntries(mudadas.map((k) => [k, mapa[k]])));
@@ -504,7 +473,6 @@ async function assinatura() {
       if (n.endsWith(".json")) partes.push(`bx:${n}:${fs.statSync(path.join(config.resumoBaixas, n)).mtimeMs}`);
     }
   } catch { partes.push("sem-baixas"); }
-  partes.push(arquivosRestritosOk ? "arquivos-restritos" : "sem-arquivos-restritos");
   partes.push(restritosOk ? "restritos" : "sem-restritos");
   partes.push(hash(statusBaukParaBases()), hash(dataBauk), hash(horasEtapas()));
   return partes.join("|");

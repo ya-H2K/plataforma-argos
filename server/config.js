@@ -33,7 +33,7 @@ export const config = {
   rpeChegadas: process.env.RPE_CHEGADAS || "C:\\Automacao\\Vox\\rpe_chegadas",
   // Carteira em Dia (relatório restrito): histórico gravado pela automação carteira_em_dia.py.
   carteiraHistorico: process.env.CARTEIRA_HISTORICO || "C:\\Automacao\\Vox\\carteira_em_dia\\historico.json",
-  // Resumo de Baixas (relatório restrito): resumos (AAAA-MM-DD.json) e Excel do dia (excel\\) gravados
+  // Resumo de Baixas (relatório restrito): um resumo por dia (AAAA-MM-DD.json) gravado
   // pela automação resumo_baixas.py.
   resumoBaixas: process.env.RESUMO_BAIXAS || "C:\\Automacao\\Vox\\resumo_baixas",
   // Primeiro mês que aparece no filtro do site.

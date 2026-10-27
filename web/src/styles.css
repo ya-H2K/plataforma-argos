@@ -1138,6 +1138,7 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .resumo-baixas__linha dd { margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .resumo-baixas__linha--alerta dt, .resumo-baixas__linha--alerta dd { color: var(--nao_realizado); }
 .resumo-baixas__hora { margin: .7rem 0 0; color: var(--text-dim); font-size: .75rem; }
+.resumo-baixas__dica { flex-basis: 100%; text-align: right; color: var(--text-dim); font-size: .72rem; }
 .resumo-baixas__erro { flex-basis: 100%; text-align: right; color: var(--nao_realizado); font-size: .78rem; }
 @media (max-width: 560px) {
   .resumo-baixas__topo { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.4rem 1.25rem; }
