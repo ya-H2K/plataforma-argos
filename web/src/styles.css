@@ -1138,8 +1138,18 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .resumo-baixas__linha dd { margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .resumo-baixas__linha--alerta dt, .resumo-baixas__linha--alerta dd { color: var(--nao_realizado); }
 .resumo-baixas__hora { margin: .7rem 0 0; color: var(--text-dim); font-size: .75rem; }
-.resumo-baixas__dica { flex-basis: 100%; text-align: right; color: var(--text-dim); font-size: .72rem; }
-.resumo-baixas__erro { flex-basis: 100%; text-align: right; color: var(--nao_realizado); font-size: .78rem; }
+.resumo-baixas__dica { color: var(--text-dim); font-size: .72rem; }
+.resumo-baixas__erro { color: var(--nao_realizado); font-size: .78rem; }
+/* Dia, Mês e Período: os filtros ficam sempre na mesma linha, à direita, e a dica/erro embaixo
+   deles não empurra nada (a tela não muda de posição ao trocar o filtro) */
+.resumo-baixas__filtro { position: relative; flex-wrap: nowrap; }
+.resumo-baixas__filtro .navegacao { flex-wrap: nowrap; }
+.resumo-baixas__dica, .resumo-baixas__erro { position: absolute; right: 0; top: calc(100% + .45rem); white-space: nowrap; }
+@media (max-width: 1000px) {
+  .resumo-baixas__filtro { position: static; flex-wrap: wrap; }
+  .resumo-baixas__filtro .navegacao { flex-wrap: wrap; }
+  .resumo-baixas__dica, .resumo-baixas__erro { position: static; flex-basis: 100%; text-align: right; white-space: normal; }
+}
 @media (max-width: 560px) {
   .resumo-baixas__topo { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.4rem 1.25rem; }
   .resumo-baixas__qtd { text-align: left; padding-left: 0; border-left: 0; }

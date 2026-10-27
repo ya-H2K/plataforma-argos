@@ -173,7 +173,7 @@ export default function ResumoBaixas({ aba, onAba, onVoltar }) {
             <h1 className="page-title">Resumo de Baixas</h1>
             <p className="page-sub">{titulo}</p>
           </div>
-          <div className="cabeca-pagina__direita filtro-relatorio">
+          <div className="cabeca-pagina__direita filtro-relatorio resumo-baixas__filtro">
             <nav className="navegacao" aria-label="Escolher o período">
               <span className="contexto__seg" role="group" aria-label="Tipo de filtro">
                 {[["dia", "Dia"], ["mes", "Mês"], ["periodo", "Período"]].map(([id, nome]) => (
