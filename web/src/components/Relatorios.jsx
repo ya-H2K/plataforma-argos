@@ -25,9 +25,9 @@ export const RELATORIOS = [
   // (tabela relatorio_acesso, chave "restrito:carteira"); manter as duas listas iguais.
   { id: "carteira", nome: "Carteira em Dia", descricao: "Valor presente a vencer do estoque, dia a dia.",
     emails: ["lucas.ramao@voxcred.com.br"] },
-  // Resumo de Baixas: por enquanto só o admin (tabela relatorio_acesso, relatorio = 'baixas', vazia).
+  // Resumo de Baixas: o admin e os e-mails abaixo (tabela relatorio_acesso, relatorio = 'baixas').
   { id: "baixas", nome: "Resumo de Baixas", descricao: "Baixas importadas no dia, por tipo de baixa.",
-    emails: [] },
+    emails: ["lucas.ramao@voxcred.com.br"] },
 ];
 // Relatórios que a pessoa logada pode abrir.
 export const relatoriosDe = (usuario) => RELATORIOS.filter((r) =>
