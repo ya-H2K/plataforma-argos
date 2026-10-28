@@ -259,7 +259,7 @@ function lerRepresadas() {
     const j = JSON.parse(fs.readFileSync(config.represadasEstado, "utf-8"));
     const itens = Object.values(j)
       .filter((r) => r?.data && r?.nome && r.na_pasta !== false)
-      .map((r) => ({ data: r.data, arquivo: r.arquivo ? path.win32.basename(r.arquivo) : `${r.nome}.txt`, encerrada: r.encerrada || null }))
+      .map((r) => ({ data: r.data, arquivo: r.arquivo ? path.win32.basename(r.arquivo) : `${r.nome}.txt`, valor: Number(r.valor) || 0, encerrada: r.encerrada || null }))
       .sort((a, b) => a.data.localeCompare(b.data) || a.arquivo.localeCompare(b.arquivo));
     return { itens };
   } catch { return null; }                  // ainda não existe ou está sendo gravado

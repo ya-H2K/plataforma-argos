@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
+import { brl } from "../formato.js";
 import Carimbo from "./Carimbo.jsx";
 import { useSessao } from "../sessao.js";
 import { Valor } from "./Animado.jsx";
@@ -123,7 +124,7 @@ function OrigemRepresadas({ iso }) {
       {erro ? <li>Não foi possível carregar agora.</li>
         : !itens ? <li>Carregando…</li>
         : !abertas.length ? <li>Nenhuma represada em aberto neste dia.</li>
-        : abertas.map((r) => <li key={r.data + r.arquivo}><b>{br(r.data)}</b>{r.arquivo}</li>)}
+        : abertas.map((r) => <li key={r.data + r.arquivo}><b>{br(r.data)}</b><span>{r.arquivo}</span><em>{brl(r.valor)}</em></li>)}
     </ul>
   );
 }
