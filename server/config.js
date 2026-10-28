@@ -38,6 +38,9 @@ export const config = {
   resumoBaixas: process.env.RESUMO_BAIXAS || "C:\\Automacao\\Vox\\resumo_baixas",
   // Por quantos meses o título a título (Excel do Resumo de Baixas) fica no Supabase; o mais antigo
   // é apagado sozinho pelo publicador, uma vez por dia. O resumo da tela fica sempre.
+  // Baixas represadas em aberto (estado do verificador do preencher_fluxo_operacional_vox.py): só o admin
+  // vê, no Report, de que pasta/arquivo vem o acumulado.
+  represadasEstado: process.env.REPRESADAS_ESTADO || "C:\\Automacao\\Vox\\represadas_estado.json",
   baixasManterMeses: Number(process.env.BAIXAS_MANTER_MESES || 12),
   // Primeiro mês que aparece no filtro do site.
   caixaDesde: process.env.CAIXA_DESDE || "2026-07",

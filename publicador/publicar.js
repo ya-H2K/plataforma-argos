@@ -233,7 +233,8 @@ function lerResumoBaixas() {
   let nomes;
   try { nomes = fs.readdirSync(config.resumoBaixas); } catch { return null; }   // a automação nunca rodou
   const dias = [];
-  for (const n of nomes.filter((x) => /^\d{4}-\d{2}-\d{2}\.json$/.test(x)).sort()) {
+  const hoje = isoLocal(agora());               // só dias encerrados (D-1): hoje entra amanhã de manhã
+  for (const n of nomes.filter((x) => /^\d{4}-\d{2}-\d{2}\.json$/.test(x) && x.slice(0, 10) < hoje).sort()) {
     try {
       const j = JSON.parse(fs.readFileSync(path.join(config.resumoBaixas, n), "utf-8"));
       if (!(j.versao >= 3)) continue;                // formato antigo: a automação refaz na próxima rodada
@@ -247,6 +248,21 @@ function lerResumoBaixas() {
     } catch { /* sendo gravado: pega na próxima volta */ }
   }
   return dias;
+}
+
+// ---------- Baixas represadas acumuladas: de onde vêm (só o admin) ----------
+// O verificador de represadas (preencher_fluxo_operacional_vox.py) guarda em represadas_estado.json cada
+// represada com a data da pasta, o arquivo e o dia em que foi encerrada. Vai na chave "admin:represadas"
+// (o banco só entrega ao admin) só com data, arquivo e encerramento (nada dos títulos).
+function lerRepresadas() {
+  try {
+    const j = JSON.parse(fs.readFileSync(config.represadasEstado, "utf-8"));
+    const itens = Object.values(j)
+      .filter((r) => r?.data && r?.nome && r.na_pasta !== false)
+      .map((r) => ({ data: r.data, arquivo: r.arquivo ? path.win32.basename(r.arquivo) : `${r.nome}.txt`, encerrada: r.encerrada || null }))
+      .sort((a, b) => a.data.localeCompare(b.data) || a.arquivo.localeCompare(b.arquivo));
+    return { itens };
+  } catch { return null; }                  // ainda não existe ou está sendo gravado
 }
 
 // ---------- horário em que cada etapa ficou OK ----------
@@ -351,6 +367,9 @@ export async function publicar({ tudo = false } = {}) {
   // Carteira em Dia: só depois do SQL dos relatórios restritos
   const carteira = lerCarteira();
   if (carteira && await conferirRestritos(sb)) mapa["restrito:carteira"] = carteira;
+
+  const represadasAdmin = lerRepresadas();
+  if (represadasAdmin) mapa["admin:represadas"] = represadasAdmin;
 
   // Resumo de Baixas (restrito): o resumo vai na chave; o título a título, para a pasta restrita do Storage
   const baixas = lerResumoBaixas();
@@ -553,6 +572,7 @@ async function assinatura() {
       if (n.endsWith(".json")) partes.push(`bx:${n}:${fs.statSync(path.join(config.resumoBaixas, n)).mtimeMs}`);
     }
   } catch { partes.push("sem-baixas"); }
+  try { partes.push(`rp:${fs.statSync(config.represadasEstado).mtimeMs}`); } catch { partes.push("sem-represadas"); }
   partes.push(arquivosRestritosOk ? "arquivos-restritos" : "sem-arquivos-restritos");
   partes.push(restritosOk ? "restritos" : "sem-restritos");
   partes.push(hash(statusBaukParaBases()), hash(dataBauk), hash(horasEtapas()));

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "../api.js";
 import Carimbo from "./Carimbo.jsx";
 import { useSessao } from "../sessao.js";
 import { Valor } from "./Animado.jsx";
@@ -109,7 +110,26 @@ function CardValor({ rotulo, valor }) {
 
 // hora: discreta, à direita do título (Liquidação Total = última liquidação do dia; Baixas Conciliadas =
 // hora em que o valor apareceu). Sem hora, o título fica sozinho, como antes.
-function CardResumo({ rotulo, valor, aguardando, linhas, hora = null }) {
+// Só o admin: clicar em "Baixas Represadas Acumulado" mostra de que pasta (data) e arquivo vem o
+// acumulado do dia: as represadas da pasta "represadas" até esse dia que ainda não tinham sido encerradas.
+function OrigemRepresadas({ iso }) {
+  const [itens, setItens] = useState(null);
+  const [erro, setErro] = useState(false);
+  useEffect(() => { api.represadas().then(setItens).catch(() => setErro(true)); }, []);
+  const br = (d) => `${d.slice(8, 10)}/${d.slice(5, 7)}`;
+  const abertas = (itens || []).filter((r) => r.data <= iso && (!r.encerrada || r.encerrada > iso));
+  return (
+    <ul className="origem-represadas">
+      {erro ? <li>Não foi possível carregar agora.</li>
+        : !itens ? <li>Carregando…</li>
+        : !abertas.length ? <li>Nenhuma represada em aberto neste dia.</li>
+        : abertas.map((r) => <li key={r.data + r.arquivo}><b>{br(r.data)}</b>{r.arquivo}</li>)}
+    </ul>
+  );
+}
+
+function CardResumo({ rotulo, valor, aguardando, linhas, hora = null, abrivel = null, iso = null }) {
+  const [aberta, setAberta] = useState(false);
   return (
     <div className="card card--resumo">
       <div className="card__topo">
@@ -120,12 +140,21 @@ function CardResumo({ rotulo, valor, aguardando, linhas, hora = null }) {
         ? <span className="card__valor card__valor--grande card__valor--aguardando">Aguardando...</span>
         : <Valor className="card__valor card__valor--grande" valor={valor} />}
       <dl className="card__linhas">
-        {linhas.map(([nome, v]) => (
+        {linhas.map(([nome, v]) => (nome === abrivel ? (
+          <div key={nome} className="card__linha-abre">
+            <button type="button" className={`card__linha-botao${aberta ? " on" : ""}`} aria-expanded={aberta}
+              onClick={() => setAberta((a) => !a)} title="Ver de que pasta e arquivo vem">
+              <dt>{nome}<span aria-hidden="true" className="card__seta">▾</span></dt>
+              <dd><Valor valor={v} /></dd>
+            </button>
+            {aberta && <OrigemRepresadas iso={iso} />}
+          </div>
+        ) : (
           <div key={nome}>
             <dt>{nome}</dt>
             <dd><Valor valor={v} /></dd>
           </div>
-        ))}
+        )))}
       </dl>
     </div>
   );
@@ -174,6 +203,7 @@ function QuadroObservacoes({ linhas: todas, mostrarResponsavel }) {
 }
 
 export default function Report({ dia, mostrarResponsavel = true }) {
+  const admin = !!useSessao()?.usuario?.admin;
   const v = dia.valores;
   // Liquidação Total: hora da última liquidação do dia, só quando URFA e Endosso já terminaram
   const liq = dia.processos.filter((p) => p.id === "urfa" || p.id === "endosso");
@@ -210,7 +240,8 @@ export default function Report({ dia, mostrarResponsavel = true }) {
           <CardResumo rotulo="Baixas Conciliadas" valor={v.baixasConciliadas}
             aguardando={v.baixasConciliadas === null} hora={v.conciliadasAs}
             linhas={[["Baixas Represadas Dia", v.baixasRepresadasDia],
-                     ["Baixas Represadas Acumulado", v.baixasRepresadasAcumulado]]} />
+                     ["Baixas Represadas Acumulado", v.baixasRepresadasAcumulado]]}
+            abrivel={admin ? "Baixas Represadas Acumulado" : null} iso={dia.data} key={dia.data} />
         </div>
       </section>
 
