@@ -6,6 +6,7 @@ import Apresentacoes from "./Apresentacoes.jsx";
 import Balancetes from "./Balancetes.jsx";
 import Carteira from "./Carteira.jsx";
 import ResumoBaixas from "./ResumoBaixas.jsx";
+import Devolucoes from "./Devolucoes.jsx";
 import { useSessao } from "../sessao.js";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, curta, valorNum } from "../formato.js";
@@ -29,6 +30,13 @@ export const RELATORIOS = [
   { id: "baixas", nome: "Resumo de Baixas", descricao: "Baixas importadas no dia, por tipo de baixa.",
     emails: ["lucas.ramao@voxcred.com.br"] },
 ];
+// Aba "Devoluções": valores devolvidos à Vox (solicitação → aprovação Qi Tech → liquidação).
+// Por enquanto só o admin vê a aba (soAdmin); o banco também só entrega ao admin.
+export const DEVOLUCOES = [
+  { id: "bk004", nome: "BK004", descricao: "Valores devolvidos à Vox, por período.", soAdmin: true },
+];
+const devolucoesDe = (usuario) => DEVOLUCOES.filter((r) => !r.soAdmin || usuario?.admin);
+
 // Relatórios que a pessoa logada pode abrir.
 export const relatoriosDe = (usuario) => RELATORIOS.filter((r) =>
   !r.emails || usuario?.admin || r.emails.includes(String(usuario?.email || "").toLowerCase()));
@@ -48,11 +56,14 @@ export default function Relatorios({ aba, onAba }) {
   }, []);
   const abrir = (id) => { window.location.hash = id ? `#/relatorios/${id}` : "#/relatorios"; setSub(id); window.scrollTo(0, 0); };
 
+  const devolucoes = devolucoesDe(usuario);
   const restritos = lista.filter((r) => r.emails);
   const doFundo = lista.filter((r) => !r.emails);
   // relatório restrito volta para a aba "Restritos"; os demais, para a lista do fundo
   const voltar = (id) => () => abrir(RELATORIOS.find((r) => r.id === id)?.emails ? "restritos" : null);
 
+  const dev = devolucoes.find((r) => r.id === sub);
+  if (dev) return <Devolucoes relatorio={dev} aba={aba} onAba={onAba} onVoltar={() => abrir("devolucoes")} />;
   if (sub === "carteira" && lista.some((r) => r.id === "carteira")) return <Carteira aba={aba} onAba={onAba} onVoltar={voltar("carteira")} />;
   if (sub === "baixas" && lista.some((r) => r.id === "baixas")) return <ResumoBaixas aba={aba} onAba={onAba} onVoltar={voltar("baixas")} />;
   if (sub === "desagio") return <Desagio aba={aba} onAba={onAba} onVoltar={voltar("desagio")} />;
@@ -65,7 +76,9 @@ export default function Relatorios({ aba, onAba }) {
   // Duas abas: "Relatórios do fundo" (todos) e "Restritos" (#/relatorios/restritos), que só aparece
   // para quem tem algum relatório restrito liberado. Só o admin vê, em cada card, quem tem acesso.
   const naRestritos = sub === "restritos" && restritos.length > 0;
-  const mostrados = naRestritos ? restritos : doFundo;
+  const naDevolucoes = sub === "devolucoes" && devolucoes.length > 0;
+  const mostrados = naRestritos ? restritos : naDevolucoes ? devolucoes : doFundo;
+  const noFundo = !naRestritos && !naDevolucoes;
   return (
     <>
       <BarraTopo aba={aba} onAba={onAba} />
@@ -76,18 +89,28 @@ export default function Relatorios({ aba, onAba }) {
             <p className="page-sub">Relatórios do FIDC Vox.</p>
           </div>
         </div>
-        {restritos.length > 0 && (
+        {(restritos.length > 0 || devolucoes.length > 0) && (
           <nav className="abas-relatorios" aria-label="Grupos de relatórios">
-            <button type="button" className={naRestritos ? undefined : "on"} aria-pressed={!naRestritos} onClick={() => abrir(null)}>
+            <button type="button" className={noFundo ? "on" : undefined} aria-pressed={noFundo} onClick={() => abrir(null)}>
               Relatórios do fundo
             </button>
+            {devolucoes.length > 0 && (
+              <button type="button" className={naDevolucoes ? "on" : undefined} aria-pressed={naDevolucoes} onClick={() => abrir("devolucoes")}>
+                Devoluções
+              </button>
+            )}
+            {restritos.length > 0 && (
             <button type="button" className={naRestritos ? "on" : undefined} aria-pressed={naRestritos} onClick={() => abrir("restritos")}>
               <svg className="abas-relatorios__cadeado" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
                 <rect x="3" y="7" width="10" height="7" rx="1" /><path d="M5 7V5a3 3 0 0 1 6 0v2" />
               </svg>
               Restritos{usuario?.admin && <span className="abas-relatorios__qtd">{restritos.length}</span>}
             </button>
+            )}
           </nav>
+        )}
+        {naDevolucoes && (
+          <p className="restritos-nota">Valores devolvidos à Vox e o andamento de cada solicitação.</p>
         )}
         {naRestritos && (
           <p className="restritos-nota">

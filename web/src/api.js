@@ -195,6 +195,36 @@ export const apiRelatorios = {
   },
 };
 
+// ---------------------------------------------------------------- devoluções (BK004...)
+
+// Solicitações de devolução à Vox (tabela devolucoes, supabase/devolucoes.sql). Por enquanto só o admin.
+// O arquivo do BK vai para restrito/devolucoes/<relatório>/<data>_<nome> no Storage.
+export const apiDevolucoes = {
+  lista: (relatorio) => rpc("vox_devolucoes", { p_relatorio: relatorio }, "As devoluções estão indisponíveis no momento."),
+  criar: async (relatorio, { inicio, fim, valor, arquivo }) => {
+    let caminho = null;
+    if (arquivo) {
+      const limpo = arquivo.name.normalize("NFKD").replace(/[^\w.-]+/g, "_");
+      caminho = `restrito/devolucoes/${relatorio}/${Date.now()}_${limpo}`;
+      const { error } = await supabase.storage.from("caixa").upload(caminho, arquivo, { upsert: false, contentType: arquivo.type || "application/octet-stream" });
+      if (error) throw erroDe(error, "Não foi possível enviar o arquivo. Tente de novo.");
+    }
+    return rpc("vox_devolucao_criar", { p_relatorio: relatorio, p_inicio: inicio, p_fim: fim, p_valor: valor,
+      p_arquivo_nome: arquivo?.name || null, p_arquivo_caminho: caminho }, "Não foi possível criar a solicitação. Tente de novo.");
+  },
+  acao: (id, acao) => rpc("vox_devolucao_acao", { p_id: id, p_acao: acao }, "Não foi possível concluir agora. Tente de novo."),
+  baixarArquivo: async (d) => {
+    const { data, error } = await supabase.storage.from("caixa").createSignedUrl(d.arquivo_caminho, 60, { download: d.arquivo_nome });
+    if (error || !data?.signedUrl) throw erroDe(error, "Arquivo indisponível no momento.");
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  },
+};
+
 // ---------------------------------------------------------------- apresentações de resultados (todos os usuários)
 
 // Relatórios com um PDF por mês (Apresentação de Resultados, Lâminas): a lista vem da chave do
