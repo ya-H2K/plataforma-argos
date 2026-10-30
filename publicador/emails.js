@@ -78,9 +78,8 @@ function lerEstado() {
 }
 function salvarEstado(e) { fs.writeFileSync(ARQ_ESTADO, JSON.stringify(e, null, 1), "utf-8"); }
 
-function enviarPeloOutlook({ to, subject, html }) {
+export function enviarPeloOutlook({ to, subject, html, cc = (process.env.EMAIL_ACESSO_CC || "").trim() }) {
   const tmp = path.join(os.tmpdir(), `vox-email-${Date.now()}.json`);
-  const cc = (process.env.EMAIL_ACESSO_CC || "").trim();
   const imagens = IMAGENS.map((i) => ({ cid: i.cid, caminho: path.join(PASTA, "email", i.arquivo) }));
   fs.writeFileSync(tmp, JSON.stringify({ to, cc, subject, html, imagens }), "utf-8");
   return new Promise((ok, falha) => {
@@ -92,6 +91,8 @@ function enviarPeloOutlook({ to, subject, html }) {
       });
   });
 }
+
+export { SITE, esc };
 
 export const ASSUNTO = "Acesso liberado – Plataforma Argos · Vox FIDC";
 

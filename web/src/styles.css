@@ -1234,3 +1234,10 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .sol__email { display: inline-flex; align-items: baseline; gap: .7rem; flex-wrap: wrap; }
 .sol__email-botao { margin-top: 0; }
 .sol__erro-inline { color: var(--nao_realizado); }
+
+/* status do BK no card da aba Devoluções */
+.status-bk { display: inline-flex; align-items: center; gap: .45rem; }
+.status-bk i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--linha-forte); flex: none; }
+.status-bk i.ok { background: var(--ok); }
+.status-bk--and { color: var(--aguardando); }
+.status-bk--and i { background: var(--aguardando); box-shadow: 0 0 0 3px color-mix(in srgb, var(--aguardando) 20%, transparent); }

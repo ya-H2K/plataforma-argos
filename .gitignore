@@ -17,3 +17,4 @@ publicador/.horarios-etapas.json
 Claude outputs/
 publicador/.emails-acesso.json
 publicador/email/previa.html
+publicador/email/previa-devolucao.html

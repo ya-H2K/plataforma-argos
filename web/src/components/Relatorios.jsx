@@ -6,7 +6,7 @@ import Apresentacoes from "./Apresentacoes.jsx";
 import Balancetes from "./Balancetes.jsx";
 import Carteira from "./Carteira.jsx";
 import ResumoBaixas from "./ResumoBaixas.jsx";
-import Devolucoes from "./Devolucoes.jsx";
+import Devolucoes, { StatusBk } from "./Devolucoes.jsx";
 import { useSessao } from "../sessao.js";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 import { brl, curta, valorNum } from "../formato.js";
@@ -126,6 +126,7 @@ export default function Relatorios({ aba, onAba }) {
               onClick={(e) => { e.preventDefault(); abrir(r.id); }}>
               <span className="relatorio-item__nome">{r.nome}</span>
               {r.descricao && <span className="relatorio-item__desc">{r.descricao}</span>}
+              {naDevolucoes && <StatusBk id={r.id} />}
               {r.emails && usuario?.admin && (
                 <span className="relatorio-item__acesso">
                   Quem vê: <b>você (admin)</b>{r.emails.map((e) => <b key={e}>{e}</b>)}

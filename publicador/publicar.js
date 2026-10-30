@@ -21,6 +21,7 @@ import { arquivoPublicado, lerDespesas } from "../server/despesas.js";
 import { conectar, gravarChaves, apagarChaves, enviarArquivo } from "./nuvem.js";
 import { statusDoDia } from "./bauk.js";
 import { avisarAprovados } from "./emails.js";
+import { avisarDevolucoes } from "./emails-devolucoes.js";
 import { horariosDosLogs, pastaLogsPreenchimento } from "./horarios-logs.js";
 import { faseBauk, isoLocal, prepararBases, montarDia } from "../server/status.js";
 
@@ -610,6 +611,7 @@ async function vigiar() {
     try {
       sbEmail ??= conectar();
       await avisarAprovados(sbEmail, { log, aviso });
+      await avisarDevolucoes(sbEmail, { log, aviso });      // nova solicitação de devolução (BK004, BK007...)
       falhasEmail = 0;
     } catch (e) {
       if (falhasEmail++ === 0) aviso(`E-mails de acesso: não consegui conferir as aprovações (${e.message}).`);

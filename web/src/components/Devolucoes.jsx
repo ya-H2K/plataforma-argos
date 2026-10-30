@@ -300,3 +300,22 @@ function NovaSolicitacao({ relatorio, onFechar, onCriada }) {
     </div>
   );
 }
+
+// Linha de status no card do BK (aba Devoluções): só quando há solicitação em andamento.
+export function StatusBk({ id }) {
+  const [lista, setLista] = useState(null);
+  useEffect(() => { apiDevolucoes.lista(id).then(setLista).catch(() => setLista(null)); }, [id]);
+  if (!lista) return null;
+  const abertas = lista.filter((d) => !d.liquidada_em);
+  if (abertas.length) {
+    const d = abertas[0];
+    const etapa = d.aprovada_em ? "aguardando liquidação" : "aguardando aprovação";
+    return (
+      <span className="relatorio-item__desc status-bk status-bk--and">
+        <i aria-hidden="true" />
+        {abertas.length > 1 ? `${abertas.length} em andamento` : `Em andamento · ${etapa} · ${brl(Number(d.valor))}`}
+      </span>
+    );
+  }
+  return null;                                     // nada em andamento: card limpo
+}
