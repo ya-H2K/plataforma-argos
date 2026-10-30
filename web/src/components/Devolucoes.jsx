@@ -163,6 +163,23 @@ function Solicitacao({ d, admin, relatorio, aoMudar }) {
             <span>Arquivo: <button type="button" className="botao-texto sol__arquivo" onClick={baixar}>{d.arquivo_nome}</button></span>
           )}
           {admin && d.email_em && <span>E-mail enviado às <b>{quando(d.email_em).hora}</b></span>}
+          {admin && d.liquidada_em && !d.email_em && (() => {
+            // "Criar e-mail": a automação do PC monta o e-mail no Outlook (com o recorte da saída e o
+            // arquivo do BK) e deixa aberto, sem enviar. Roda de 2 em 2 minutos.
+            const montando = d.email_pedido_em && !d.email_rascunho_em && !d.email_erro;
+            return (
+              <span className="sol__email">
+                {d.email_rascunho_em && <>E-mail criado no Outlook às <b>{quando(d.email_rascunho_em).hora}</b></>}
+                {montando && <>Montando o e-mail no Outlook… (até 2 min)</>}
+                {d.email_erro && <span className="sol__erro-inline">Não consegui criar o e-mail: {d.email_erro}</span>}
+                {!montando && (
+                  <button type="button" className="passo__botao sol__email-botao" disabled={ocupado} onClick={() => acao("email")}>
+                    ✉ {d.email_rascunho_em || d.email_erro ? "Criar de novo" : "Criar e-mail"}
+                  </button>
+                )}
+              </span>
+            );
+          })()}
           {admin && !d.liquidada_em && (
             confirmarExclusao ? (
               <span className="sol__excluir">

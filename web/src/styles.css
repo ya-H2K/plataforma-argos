@@ -1230,3 +1230,7 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
   .passo::before { display: none; }
   .sol__direita { width: 100%; justify-content: space-between; }
 }
+
+.sol__email { display: inline-flex; align-items: baseline; gap: .7rem; flex-wrap: wrap; }
+.sol__email-botao { margin-top: 0; }
+.sol__erro-inline { color: var(--nao_realizado); }
