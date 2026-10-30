@@ -308,12 +308,9 @@ export function StatusBk({ id }) {
   if (!lista) return null;
   const abertas = lista.filter((d) => !d.liquidada_em);
   if (abertas.length) {
-    const d = abertas[0];
-    const etapa = d.aprovada_em ? "aguardando liquidação" : "aguardando aprovação";
     return (
       <span className="relatorio-item__desc status-bk status-bk--and">
-        <i aria-hidden="true" />
-        {abertas.length > 1 ? `${abertas.length} em andamento` : `Em andamento · ${etapa} · ${brl(Number(d.valor))}`}
+        <i aria-hidden="true" />Em andamento
       </span>
     );
   }
