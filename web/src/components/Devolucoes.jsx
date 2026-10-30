@@ -153,7 +153,7 @@ function Solicitacao({ d, admin, relatorio, aoMudar }) {
         </li>
         <li className={`passo ${d.liquidada_em ? "ok" : d.aprovada_em ? "atual" : ""}`}>
           <i aria-hidden="true" /><b>Liquidação</b>
-          <span>{d.liquidada_em ? `${liquidada.dia} · ${liquidada.hora} · saída no extrato` : d.aprovada_em ? "Aguardando a saída no extrato" : "Automática pelo extrato"}</span>
+          <span>{d.liquidada_em ? `${liquidada.dia} · ${liquidada.hora} · saída no extrato` : d.aprovada_em ? "Aguardando liquidação Qi Tech" : "Automática pelo extrato"}</span>
         </li>
       </ol>
 

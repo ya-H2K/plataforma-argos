@@ -31,10 +31,10 @@ export const RELATORIOS = [
     emails: ["lucas.ramao@voxcred.com.br"] },
 ];
 // Aba "Devoluções": valores devolvidos à Vox (solicitação → aprovação Qi Tech → liquidação).
-// Por enquanto só o admin vê a aba (soAdmin); o banco também só entrega ao admin.
+// Todos os usuários veem (liberado em 30/10/2026); criar, aprovar, excluir e ver o arquivo: só o admin.
 export const DEVOLUCOES = [
-  { id: "bk004", nome: "BK004", descricao: "Valores devolvidos à Vox, por período.", soAdmin: true },
-  { id: "bk007", nome: "BK007", descricao: "Valores devolvidos à Vox, por período.", soAdmin: true },
+  { id: "bk004", nome: "BK004", descricao: "Valores devolvidos à Vox, por período." },
+  { id: "bk007", nome: "BK007", descricao: "Valores devolvidos à Vox, por período." },
 ];
 const devolucoesDe = (usuario) => DEVOLUCOES.filter((r) => !r.soAdmin || usuario?.admin);
 
