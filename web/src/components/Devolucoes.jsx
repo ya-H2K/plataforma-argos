@@ -270,6 +270,9 @@ function NovaSolicitacao({ relatorio, onFechar, onCriada }) {
         </label>
 
         {lidoDoArquivo && <span className="devolucao-form__ok">✓ Período e valor lidos do arquivo, confira antes de criar.</span>}
+        {lidoDoArquivo && inicio && inicio === fim && (
+          <span className="devolucao-form__dica">O arquivo tem um único dia. Se o período for outro, ajuste as datas acima.</span>
+        )}
         {arquivo && info && !lidoDoArquivo && !lendo && <span className="devolucao-form__dica">Preencha o período e o valor.</span>}
         {erro && <span className="devolucao-form__erro" role="alert">{erro}</span>}
 

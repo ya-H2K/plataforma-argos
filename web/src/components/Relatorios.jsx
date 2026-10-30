@@ -34,6 +34,7 @@ export const RELATORIOS = [
 // Por enquanto só o admin vê a aba (soAdmin); o banco também só entrega ao admin.
 export const DEVOLUCOES = [
   { id: "bk004", nome: "BK004", descricao: "Valores devolvidos à Vox, por período.", soAdmin: true },
+  { id: "bk007", nome: "BK007", descricao: "Valores devolvidos à Vox, por período.", soAdmin: true },
 ];
 const devolucoesDe = (usuario) => DEVOLUCOES.filter((r) => !r.soAdmin || usuario?.admin);
 
