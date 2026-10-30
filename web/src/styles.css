@@ -1241,3 +1241,6 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .status-bk i.ok { background: var(--ok); }
 .status-bk--and { color: var(--aguardando); }
 .status-bk--and i { background: var(--aguardando); box-shadow: 0 0 0 3px color-mix(in srgb, var(--aguardando) 20%, transparent); }
+.relatorio-item { position: relative; }
+/* "Em andamento" no canto inferior direito do card, na linha do "Abrir →" */
+.relatorio-item .status-bk { position: absolute; right: 1.8rem; bottom: 1.72rem; font-size: .75rem; line-height: 1.2; }
