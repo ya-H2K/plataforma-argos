@@ -33,8 +33,8 @@ export const RELATORIOS = [
 // Aba "Devoluções": valores devolvidos à Vox (solicitação → aprovação Qi Tech → liquidação).
 // Todos os usuários veem (liberado em 30/10/2026); criar, aprovar, excluir e ver o arquivo: só o admin.
 export const DEVOLUCOES = [
-  { id: "bk004", nome: "BK004", descricao: "Valores devolvidos à Vox, por período." },
-  { id: "bk007", nome: "BK007", descricao: "Valores devolvidos à Vox, por período." },
+  { id: "bk004", nome: "BK004" },
+  { id: "bk007", nome: "BK007" },
 ];
 const devolucoesDe = (usuario) => DEVOLUCOES.filter((r) => !r.soAdmin || usuario?.admin);
 
@@ -125,7 +125,7 @@ export default function Relatorios({ aba, onAba }) {
             <a key={r.id} href={`#/relatorios/${r.id}`} className="card relatorio-item"
               onClick={(e) => { e.preventDefault(); abrir(r.id); }}>
               <span className="relatorio-item__nome">{r.nome}</span>
-              <span className="relatorio-item__desc">{r.descricao}</span>
+              {r.descricao && <span className="relatorio-item__desc">{r.descricao}</span>}
               {r.emails && usuario?.admin && (
                 <span className="relatorio-item__acesso">
                   Quem vê: <b>você (admin)</b>{r.emails.map((e) => <b key={e}>{e}</b>)}

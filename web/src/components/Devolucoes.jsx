@@ -79,7 +79,7 @@ export default function Devolucoes({ relatorio, aba, onAba, onVoltar }) {
           <div>
             <button type="button" className="botao-texto relatorio__voltar" onClick={onVoltar}>← Devoluções</button>
             <h1 className="page-title">{relatorio.nome}</h1>
-            <p className="page-sub">{relatorio.descricao}</p>
+            {relatorio.descricao && <p className="page-sub">{relatorio.descricao}</p>}
           </div>
           {admin && (
             <button type="button" className="button button--pequeno" onClick={() => setNovo(true)}>+ Nova solicitação</button>
