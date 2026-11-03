@@ -21,6 +21,7 @@ export const RELATORIOS = [
   { id: "despesas", nome: "Despesas", descricao: "Detalhamento das despesas mensais." },
   { id: "apresentacoes", nome: "Apresentação de Resultados", descricao: "Apresentações mensais do fundo." },
   { id: "balancetes", nome: "Balancete", descricao: "Balancete e razão de cada mês." },
+  { id: "mec", nome: "Mapa de Evolução de Cotas", descricao: "MEC das cotas Sub e Mezanino, mês a mês (PDF e Excel)." },
   { id: "laminas", nome: "Lâmina", descricao: "Lâminas mensais do fundo." },
   { id: "flash", nome: "Flash Report", descricao: "Flash Reports mensais do fundo." },
   // restrito: só o admin e os e-mails abaixo veem o card. Quem garante de verdade é o banco
@@ -30,9 +31,6 @@ export const RELATORIOS = [
   // Resumo de Baixas: o admin e os e-mails abaixo (tabela relatorio_acesso, relatorio = 'baixas').
   { id: "baixas", nome: "Resumo de Baixas", descricao: "Baixas importadas no dia, por tipo de baixa.",
     emails: ["lucas.ramao@voxcred.com.br"] },
-  // Mapa de Evolução de Cotas: por enquanto só o admin (emails vazio; no banco, relatorio = 'mec').
-  { id: "mec", nome: "Mapa de Evolução de Cotas", descricao: "MEC das cotas Sub e Mezanino, mês a mês (PDF e Excel).",
-    emails: [] },
 ];
 // Aba "Devoluções": valores devolvidos à Vox (solicitação → aprovação Qi Tech → liquidação).
 // Todos os usuários veem (liberado em 30/10/2026); criar, aprovar, excluir e ver o arquivo: só o admin.
@@ -72,7 +70,7 @@ export default function Relatorios({ aba, onAba }) {
   if (sub === "carteira" && lista.some((r) => r.id === "carteira")) return <Carteira aba={aba} onAba={onAba} onVoltar={voltar("carteira")} />;
   if (sub === "baixas" && lista.some((r) => r.id === "baixas")) return <ResumoBaixas aba={aba} onAba={onAba} onVoltar={voltar("baixas")} />;
   if (sub === "desagio") return <Desagio aba={aba} onAba={onAba} onVoltar={voltar("desagio")} />;
-  if (sub === "mec" && lista.some((r) => r.id === "mec")) return <Mec aba={aba} onAba={onAba} onVoltar={voltar("mec")} />;
+  if (sub === "mec") return <Mec aba={aba} onAba={onAba} onVoltar={voltar("mec")} />;
   if (sub === "balancetes") return <Balancetes aba={aba} onAba={onAba} onVoltar={voltar("balancetes")} />;
   if (sub === "laminas") return <Apresentacoes key="laminas" tipo="laminas" aba={aba} onAba={onAba} onVoltar={voltar("laminas")} />;
   if (sub === "flash") return <Apresentacoes key="flash" tipo="flash" aba={aba} onAba={onAba} onVoltar={voltar("flash")} />;

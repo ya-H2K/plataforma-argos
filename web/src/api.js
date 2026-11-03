@@ -291,14 +291,14 @@ export const apiBalancetes = {
   },
 };
 
-// ---------------------------------------------------------------- Mapa de Evolução de Cotas (restrito)
+// ---------------------------------------------------------------- Mapa de Evolução de Cotas (todos os usuários)
 
-const caminhoMec = (mes, cota, arq) => `restrito/mec/${mes}/${cota}.${arq.ext}`;
+const caminhoMec = (mes, cota, arq) => `mec/${mes}/${cota}.${arq.ext}`;
 export const apiMec = {
   // [{ id: "AAAA-MM", cotas: { sub: { pdf?, html?, excel? }, mezanino: {...} } }], do mais recente ao mais antigo.
   lista: async () => {
-    const r = await lerPainel(["restrito:mec", "inicio"]);
-    return { meses: r["restrito:mec"]?.meses || [], meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
+    const r = await lerPainel(["rel:mec", "inicio"]);
+    return { meses: r["rel:mec"]?.meses || [], meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
   },
   arquivo: async (mes, cota, arq) => {
     const { data, error } = await supabase.storage.from("caixa").download(caminhoMec(mes, cota, arq));

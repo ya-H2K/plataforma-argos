@@ -1,4 +1,4 @@
-// Mapa de Evolução de Cotas (MEC), relatório restrito (por enquanto só o admin).
+// Mapa de Evolução de Cotas (MEC): todos os usuários veem (liberado em 03/11/2026).
 // Pasta de publicados: AAAA\MM\{Sub|Mezanino}\<qualquer nome>.{pdf|html|htm|xlsx|xls|xlsm}.
 // A extensão diz o formato (pdf, html ou excel); se houver dois do mesmo formato, vale o mais recente.
 import fs from "node:fs/promises";
@@ -52,9 +52,8 @@ export async function listarMec(pasta) {
   return { meses, ignorados };
 }
 
-// No bucket: restrito/mec/AAAA-MM/{sub|mezanino}.{pdf|html|xlsx} (a pasta restrito/ só abre para quem
-// tem o relatório liberado: admin + relatorio_acesso com relatorio = 'mec').
-export const caminhoNuvemMec = (id, cota, arq) => `restrito/mec/${id}/${cota}.${arq.ext}`;
+// No bucket: mec/AAAA-MM/{sub|mezanino}.{pdf|html|xlsx} (todos os usuários com acesso).
+export const caminhoNuvemMec = (id, cota, arq) => `mec/${id}/${cota}.${arq.ext}`;
 
 export const TIPO_MEC = {
   pdf: "application/pdf",
@@ -66,6 +65,6 @@ export const TIPO_MEC = {
 
 export function gerarMec(meses) {
   const limpar = (a) => a && { nome: a.nome, ext: a.ext, bytes: a.bytes, publicadoEm: new Date(a.mtimeMs).toISOString() };
-  return { "restrito:mec": { meses: meses.map(({ id, cotas }) => ({ id, cotas: Object.fromEntries(
+  return { "rel:mec": { meses: meses.map(({ id, cotas }) => ({ id, cotas: Object.fromEntries(
     Object.entries(cotas).map(([c, f]) => [c, { pdf: limpar(f.pdf), html: limpar(f.html), excel: limpar(f.excel) }])) })) } };
 }

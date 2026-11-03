@@ -421,16 +421,14 @@ export async function publicar({ tudo = false } = {}) {
     }
   } catch (e) { aviso(`Flash Report: ${e.message}`); }
 
-  // Mapa de Evolução de Cotas (restrito): AAAA\MM\{Sub|Mezanino}; só depois do SQL dos restritos
+  // Mapa de Evolução de Cotas (todos veem): AAAA\MM\{Sub|Mezanino}
   let mec = null;
   try {
-    if (await conferirArquivosRestritos(sb)) {
-      const r = await listarMec(config.mecPublicado);
-      mec = r.meses;
-      Object.assign(mapa, gerarMec(r.meses));
-      for (const n of r.ignorados) {
-        if (!avisadosApr.has(`m:${n}`)) { avisadosApr.add(`m:${n}`); aviso(`MEC: ${n} ignorado (use AAAA\\MM\\Sub ou Mezanino, com PDF/HTML e Excel).`); }
-      }
+    const r = await listarMec(config.mecPublicado);
+    mec = r.meses;
+    Object.assign(mapa, gerarMec(r.meses));
+    for (const n of r.ignorados) {
+      if (!avisadosApr.has(`m:${n}`)) { avisadosApr.add(`m:${n}`); aviso(`MEC: ${n} ignorado (use AAAA\\MM\\Sub ou Mezanino, com PDF/HTML e Excel).`); }
     }
   } catch (e) { aviso(`MEC: ${e.message}`); }
 
@@ -636,7 +634,7 @@ async function vigiar() {
   log(`Balancete e Razão: ${config.balancetesPublicado}`);
   log(`Lâminas: ${config.laminasPublicado}`);
   log(`Flash Report: ${config.flashPublicado}`);
-  log(`MEC (restrito): ${config.mecPublicado}`);
+  log(`MEC: ${config.mecPublicado}`);
   log(`Chegada dos arquivos RPE: ${config.rpeChegadas}`);
   log(`Carteira em Dia: ${config.carteiraHistorico}`);
   log(`Resumo de Baixas: ${config.resumoBaixas} (título a título guardado por ${config.baixasManterMeses} meses)`);

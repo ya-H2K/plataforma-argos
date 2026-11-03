@@ -5,7 +5,7 @@ import VisorPdf from "./VisorPdf.jsx";
 import SeletorMes from "./SeletorMes.jsx";
 import { useAutoAtualizacao } from "../hooks/useAutoAtualizacao.js";
 
-// Relatórios > Restritos > Mapa de Evolução de Cotas (por enquanto só o admin).
+// Relatórios > Mapa de Evolução de Cotas (todos os usuários).
 //   #/relatorios/mec                        lista (cards por ano)
 //   #/relatorios/mec/AAAA-MM[/mezanino]     o mês: abas Sub | Mezanino, relatório na tela (PDF ou HTML),
 //                                           "Baixar PDF" e "Baixar Excel" da cota aberta
