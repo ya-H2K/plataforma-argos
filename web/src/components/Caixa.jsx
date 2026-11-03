@@ -164,10 +164,10 @@ function Tabela({ linhas, selecionada, onSelecionar }) {
                     <td key={id} className={`num${sinal(l[id])}`}>{l.abertura && l[id] === null ? "" : valorNum(l[id])}</td>
                   ))}
                   <td className={`num${l.variacaoCaixa === null ? "" : l.variacaoCaixa < 0 ? " negativo" : " positivo"}`}>
-                    {l.abertura ? "" : pct(l.variacaoCaixa)}
+                    {l.abertura && l.variacaoCaixa == null ? "" : pct(l.variacaoCaixa)}
                   </td>
                   <td className="num">
-                    {l.abertura || l.enquadramento == null ? "" :
+                    {l.enquadramento == null ? "" :
                       <span className={`enq-chip enq--${faixaEnquadramento(l.enquadramento)}`}>{pct(l.enquadramento)}</span>}
                   </td>
                 </tr>

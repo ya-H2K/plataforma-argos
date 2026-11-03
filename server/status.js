@@ -411,7 +411,7 @@ function situacaoDoDia(b, iso, agora, horaEncerramento) {
 }
 
 export function montarDia(b, iso, { agora, horaFechamento, horaEncerramento = "18:00", limiteRpe = "14:00",
-  limiteEndosso = "15:00", limiteUrfa = "17:00", limiteArquivosBauk = "12:00", limiteFlash = "12:00",
+  limiteEndosso = "15:00", limiteUrfa = "18:00", limiteArquivosBauk = "12:00", limiteFlash = "12:00",
   mostrarResponsavel = true }) {
   b = prepararBases(b);
   const aberto = diaAberto(iso, agora, horaFechamento);

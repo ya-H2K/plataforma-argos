@@ -266,7 +266,8 @@ export const LIMITE_ENQUADRAMENTO = 0.67;
 export function GraficoEnquadramento({ linhas, selecionada, onSelecionar }) {
   const [ref, largura] = useLargura();
   const [mouse, setMouse] = useState(null);           // { x, y } em pixels dentro do SVG
-  const dias = linhas.filter((l) => !l.abertura && l.enquadramento != null);
+  // a abertura (último dia útil do mês anterior) entra como ponto de partida da comparação
+  const dias = linhas.filter((l) => l.enquadramento != null);
   if (!dias.length) return null;
   const lo = Math.min(LIMITE_ENQUADRAMENTO, ...dias.map((d) => d.enquadramento));
   const hi = Math.max(1, Math.ceil((Math.max(...dias.map((d) => d.enquadramento)) + 0.02) * 20) / 20);
@@ -295,7 +296,7 @@ export function GraficoEnquadramento({ linhas, selecionada, onSelecionar }) {
           <svg width={w} height={ALTURA} role="img" className="graf__svg--clicavel"
             aria-label={`Enquadramento de ${curta(dias[0].data)} a ${curta(dias.at(-1).data)}`}
             onPointerMove={mover} onPointerLeave={() => setMouse(null)}
-            onClick={() => ativo != null && onSelecionar?.(dias[ativo].data)}>
+            onClick={() => ativo != null && !dias[ativo].abertura && onSelecionar?.(dias[ativo].data)}>
             <defs>
               <linearGradient id="grad-enq" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0" style={{ stopColor: "var(--gold)", stopOpacity: 0.22 }} />
@@ -335,7 +336,7 @@ export function GraficoEnquadramento({ linhas, selecionada, onSelecionar }) {
         } : null}>
           {d && (
             <>
-              <strong>{curta(d.data)}</strong>
+              <strong>{curta(d.data)}{d.abertura ? " (último dia útil do mês anterior)" : ""}</strong>
               <span>Enquadramento {pct(d.enquadramento)}</span>
             </>
           )}

@@ -130,6 +130,16 @@ export function gerarCaixa(meses) {
   const saida = {};
   const lista = meses.map(({ publicado }) => semCaminho(publicado));
   saida["caixa:meses"] = { meses: lista };
+  // Abertura do mês sem enquadramento/variação na planilha: usa o último dia útil do mês anterior,
+  // para o gráfico de enquadramento ter com o que comparar no início do mês.
+  const ordem = [...meses].sort((a, b) => a.publicado.id.localeCompare(b.publicado.id));
+  for (let i = 1; i < ordem.length; i++) {
+    const ab = ordem[i].dados?.linhas?.[0];
+    const ant = ordem[i - 1].dados?.linhas?.filter((l) => !l.abertura).at(-1);
+    if (!ab?.abertura || !ant) continue;
+    if (ab.enquadramento == null && ant.enquadramento != null) ab.enquadramento = ant.enquadramento;
+    if (ab.variacaoCaixa == null && ant.variacaoCaixa != null) ab.variacaoCaixa = ant.variacaoCaixa;
+  }
   for (const { publicado, dados } of meses) {
     saida[`caixa:${publicado.id}`] = { mes: publicado.id, arquivo: semCaminho(publicado), caixa: dados };
   }
