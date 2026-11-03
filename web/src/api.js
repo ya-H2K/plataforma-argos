@@ -291,6 +291,36 @@ export const apiBalancetes = {
   },
 };
 
+// ---------------------------------------------------------------- Mapa de Evolução de Cotas (restrito)
+
+const caminhoMec = (mes, cota, arq) => `restrito/mec/${mes}/${cota}.${arq.ext}`;
+export const apiMec = {
+  // [{ id: "AAAA-MM", cotas: { sub: { pdf?, html?, excel? }, mezanino: {...} } }], do mais recente ao mais antigo.
+  lista: async () => {
+    const r = await lerPainel(["restrito:mec", "inicio"]);
+    return { meses: r["restrito:mec"]?.meses || [], meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
+  },
+  arquivo: async (mes, cota, arq) => {
+    const { data, error } = await supabase.storage.from("caixa").download(caminhoMec(mes, cota, arq));
+    if (error || !data) {
+      const e = erroDe(error, "Arquivo indisponível no momento.");
+      e.detalhe = error?.message || String(error?.statusCode || "");
+      throw e;
+    }
+    return data;
+  },
+  baixar: async (mes, cota, arq) => {
+    const { data, error } = await supabase.storage.from("caixa").createSignedUrl(caminhoMec(mes, cota, arq), 60, { download: arq.nome });
+    if (error || !data?.signedUrl) throw erroDe(error, "Arquivo indisponível no momento.");
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  },
+};
+
 // ---------------------------------------------------------------- login
 
 const regrasOk = (s) => s.length >= 8 && /[A-Z]/.test(s) && /[a-z]/.test(s) && /\d/.test(s) && /[^A-Za-z0-9\s]/.test(s);

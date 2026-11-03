@@ -17,6 +17,7 @@ import { listarBalancetes, caminhoNuvem, TIPO_CONTEUDO } from "../server/balance
 import { listarApresentacoes } from "../server/apresentacoes.js";
 import { listarLaminas } from "../server/laminas.js";
 import { listarFlash } from "../server/flash.js";
+import { listarMec, gerarMec, caminhoNuvemMec, TIPO_MEC } from "../server/mec.js";
 import { arquivoPublicado, lerDespesas } from "../server/despesas.js";
 import { conectar, gravarChaves, apagarChaves, enviarArquivo } from "./nuvem.js";
 import { statusDoDia } from "./bauk.js";
@@ -420,6 +421,19 @@ export async function publicar({ tudo = false } = {}) {
     }
   } catch (e) { aviso(`Flash Report: ${e.message}`); }
 
+  // Mapa de Evolução de Cotas (restrito): AAAA\MM\{Sub|Mezanino}; só depois do SQL dos restritos
+  let mec = null;
+  try {
+    if (await conferirArquivosRestritos(sb)) {
+      const r = await listarMec(config.mecPublicado);
+      mec = r.meses;
+      Object.assign(mapa, gerarMec(r.meses));
+      for (const n of r.ignorados) {
+        if (!avisadosApr.has(`m:${n}`)) { avisadosApr.add(`m:${n}`); aviso(`MEC: ${n} ignorado (use AAAA\\MM\\Sub ou Mezanino, com PDF/HTML e Excel).`); }
+      }
+    }
+  } catch (e) { aviso(`MEC: ${e.message}`); }
+
   // Balancete e Razão: subpastas por mês na pasta de publicados
   let balancetes = null;
   try {
@@ -483,6 +497,18 @@ export async function publicar({ tudo = false } = {}) {
         if (!tudo && arquivos[`bal:${destino}`] === arq.mtimeMs) continue;
         await enviarArquivo(sb, destino, fs.readFileSync(arq.caminho), TIPO_CONTEUDO[arq.ext]);
         arquivos[`bal:${destino}`] = arq.mtimeMs;
+        enviados++;
+      }
+    }
+  }
+
+  for (const { id, cotas } of mec || []) {
+    for (const [cota, formatos] of Object.entries(cotas)) {
+      for (const arq of Object.values(formatos)) {
+        const destino = caminhoNuvemMec(id, cota, arq);
+        if (!tudo && arquivos[`mec:${destino}`] === arq.mtimeMs) continue;
+        await enviarArquivo(sb, destino, fs.readFileSync(arq.caminho), TIPO_MEC[arq.ext]);
+        arquivos[`mec:${destino}`] = arq.mtimeMs;
         enviados++;
       }
     }
@@ -565,6 +591,22 @@ async function assinatura() {
     }
   } catch { partes.push("sem-balancetes"); }
   try {
+    const listar = (p) => fs.readdirSync(p).sort();
+    for (const a of listar(config.mecPublicado)) {
+      const da = path.join(config.mecPublicado, a);
+      if (!fs.statSync(da).isDirectory()) continue;
+      for (const m of listar(da)) {
+        const dm = path.join(da, m);
+        if (!fs.statSync(dm).isDirectory()) continue;
+        for (const c of listar(dm)) {
+          const dc = path.join(dm, c);
+          if (!fs.statSync(dc).isDirectory()) continue;
+          for (const n of listar(dc)) partes.push(`m:${a}/${m}/${c}/${n}:${fs.statSync(path.join(dc, n)).mtimeMs}`);
+        }
+      }
+    }
+  } catch { partes.push("sem-mec"); }
+  try {
     for (const n of fs.readdirSync(config.rpeChegadas).sort()) partes.push(`r:${n}:${fs.statSync(path.join(config.rpeChegadas, n)).mtimeMs}`);
   } catch { partes.push("sem-rpe-chegadas"); }
   try { partes.push(`c:${fs.statSync(config.carteiraHistorico).mtimeMs}`); } catch { partes.push("sem-carteira"); }
@@ -594,6 +636,7 @@ async function vigiar() {
   log(`Balancete e Razão: ${config.balancetesPublicado}`);
   log(`Lâminas: ${config.laminasPublicado}`);
   log(`Flash Report: ${config.flashPublicado}`);
+  log(`MEC (restrito): ${config.mecPublicado}`);
   log(`Chegada dos arquivos RPE: ${config.rpeChegadas}`);
   log(`Carteira em Dia: ${config.carteiraHistorico}`);
   log(`Resumo de Baixas: ${config.resumoBaixas} (título a título guardado por ${config.baixasManterMeses} meses)`);

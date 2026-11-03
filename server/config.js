@@ -25,6 +25,9 @@ export const config = {
   // Lâminas: pasta organizada por ano e mês ("2026\\09\\qualquer nome.pdf").
   laminasPublicado: process.env.LAMINAS_PUBLICADO ||
     "H:\\3. Gestão\\VOX FIDC\\8.Estudos e levantamentos\\Lâmina - Publicado",
+  // Mapa de Evolução de Cotas (restrito): AAAA\\MM\\{Sub|Mezanino}\\ com o PDF/HTML e o Excel.
+  mecPublicado: process.env.MEC_PUBLICADO ||
+    "H:\\3. Gestão\\VOX FIDC\\8.Estudos e levantamentos\\MEC - Publicado",
   // Flash Report: uma subpasta por mês ("2026.01") com o PDF dentro.
   flashPublicado: process.env.FLASH_PUBLICADO ||
     "H:\\3. Gestão\\VOX FIDC\\8.Estudos e levantamentos\\Flash Report - Publicado",
