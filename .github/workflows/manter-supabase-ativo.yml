@@ -1,0 +1,30 @@
+# Mantém o projeto do Supabase ativo (o plano gratuito pausa projetos com pouca
+# atividade em 7 dias). Faz consultas leves todo dia, inclusive fins de semana e
+# feriados, sem depender do PC. Usa só a chave pública (a mesma do site).
+name: Manter Supabase ativo
+
+on:
+  schedule:
+    - cron: "17 11 * * *"   # todo dia às 08:17 (Brasília)
+    - cron: "47 22 * * *"   # todo dia às 19:47 (Brasília)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar o Supabase
+        env:
+          URL: https://cmvvirqrxgvhpovnbprv.supabase.co
+          KEY: sb_publishable_C7SXcCcpHFMXlTOhe8YDrw_-Ecm7Gje
+        run: |
+          set -e
+          for i in 1 2 3; do
+            curl -fsS -o /dev/null -w "auth: %{http_code}\n" "$URL/auth/v1/health" -H "apikey: $KEY"
+            curl -sS -o /dev/null -w "rest: %{http_code}\n" "$URL/rest/v1/painel?select=*&limit=1" -H "apikey: $KEY"
+            curl -sS -o /dev/null -w "storage: %{http_code}\n" "$URL/storage/v1/bucket" -H "apikey: $KEY" -H "Authorization: Bearer $KEY"
+            sleep 5
+          done

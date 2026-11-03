@@ -1,6 +1,10 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
+rem Copia os workflows do GitHub Actions (a pasta .github nao pode ser gravada pela VM)
+if not exist ".github\workflows" mkdir ".github\workflows"
+copy /y "publicador\github-pages.yml" ".github\workflows\pages.yml" >nul
+copy /y "publicador\manter-supabase-ativo.yml" ".github\workflows\manter-supabase-ativo.yml" >nul
 rem Envia o codigo do site para o GitHub. O GitHub Actions compila e publica sozinho
 rem em 1 a 3 minutos. O arquivo .env (com a chave secreta) NUNCA vai junto.
 git add -A
