@@ -25,7 +25,7 @@ const numeroBr = (t) => Number(String(t).trim().replace(/\./g, "").replace(",", 
 const textoValor = (v) => (Number.isFinite(v) ? v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "");
 
 // Lê o CSV do BK (BK_CONSOLIDADO_AAAAMMDD_A_AAAAMMDD.csv): soma ValorContabil e pega o período do nome
-// do arquivo (ou, sem ele, a menor e a maior DataReferencia). Excel e outros formatos: só o upload.
+// do arquivo (opcional: a solicitação pode ser criada sem ele) (ou, sem ele, a menor e a maior DataReferencia). Excel e outros formatos: só o upload.
 async function lerArquivoBk(arquivo) {
   const peloNome = arquivo.name.match(/(\d{8})_A_(\d{8})/i);
   const info = { inicio: peloNome ? isoDe8(peloNome[1]) : "", fim: peloNome ? isoDe8(peloNome[2]) : "", valor: null, linhas: null };
@@ -234,7 +234,7 @@ function NovaSolicitacao({ relatorio, onFechar, onCriada }) {
   };
 
   const v = numeroBr(valor);
-  const valido = arquivo && inicio && fim && fim >= inicio && Number.isFinite(v) && v > 0;
+  const valido = inicio && fim && fim >= inicio && Number.isFinite(v) && v > 0;
   const criar = async (e) => {
     e.preventDefault();
     if (!valido) return;
@@ -266,7 +266,7 @@ function NovaSolicitacao({ relatorio, onFechar, onCriada }) {
             </>
           ) : (
             <>
-              <b>Arquivo do {relatorio.nome}</b>
+              <b>Arquivo do {relatorio.nome} (opcional)</b>
               Clique ou arraste o arquivo aqui
             </>
           )}
