@@ -110,7 +110,11 @@ export async function avisarAprovados(sb, { log = console.log, aviso = console.w
   const { data, error } = await sb.from("perfis").select("id, nome, email, aprovado_em")
     .eq("status", "ativo").eq("admin", false).gte("aprovado_em", estado.desde);
   if (error) throw new Error(error.message);
+  // quem criou a senha pelo link de primeiro acesso já está dentro: não precisa do aviso
+  const { data: pa } = await sb.from("primeiro_acesso").select("usuario").not("usuario", "is", null);
+  const peloLink = new Set((pa || []).map((x) => x.usuario));
   for (const p of data || []) {
+    if (peloLink.has(p.id)) continue;
     if (estado.enviados[p.id] || (estado.falhas[p.id] || 0) >= MAX_TENTATIVAS || !p.email) continue;
     try {
       await enviarPeloOutlook({ to: p.email, subject: ASSUNTO, html: htmlAcesso({ nome: p.nome, email: p.email }) });

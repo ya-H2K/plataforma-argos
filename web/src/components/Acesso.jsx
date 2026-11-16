@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiAuth } from "../api.js";
 import { LogoH2, LogoVoxFidc, OlhoArgos } from "./Logos.jsx";
 
@@ -41,6 +41,26 @@ function CamposSenha({ senha, confirma, onSenha, onConfirma, rotulo = "Senha" })
   );
 }
 
+// Lado esquerdo das telas de acesso: H2 Kapital + Vox FIDC, e a apresentação da Plataforma Argos.
+function LadoArgos() {
+  return (
+    <aside className="acesso__lado">
+      <OlhoArgos className="acesso__olho-fundo" pontos={false} />
+      <div className="acesso__logos">
+        <LogoH2 />
+        <span className="acesso__divisor" aria-hidden="true" />
+        <LogoVoxFidc />
+      </div>
+      <div className="acesso__apresenta">
+        <OlhoArgos />
+        <p className="acesso__argos">Argos</p>
+        <p className="acesso__frase">Plataforma de acompanhamento do <b>Vox FIDC</b>: operação do dia, fluxo de caixa e relatórios do fundo.</p>
+      </div>
+      <span className="acesso__rodape">H2 Kapital</span>
+    </aside>
+  );
+}
+
 export default function Acesso({ onEntrar }) {
   // etapa: entrar | cadastro | esqueci | enviado
   const [etapa, setEtapa] = useState("entrar");
@@ -77,21 +97,7 @@ export default function Acesso({ onEntrar }) {
 
   return (
     <div className="acesso acesso--argos">
-      {/* lado esquerdo: H2 Kapital + Vox FIDC, e a apresentação da Plataforma Argos */}
-      <aside className="acesso__lado">
-        <OlhoArgos className="acesso__olho-fundo" pontos={false} />
-        <div className="acesso__logos">
-          <LogoH2 />
-          <span className="acesso__divisor" aria-hidden="true" />
-          <LogoVoxFidc />
-        </div>
-        <div className="acesso__apresenta">
-          <OlhoArgos />
-          <p className="acesso__argos">Argos</p>
-          <p className="acesso__frase">Plataforma de acompanhamento do <b>Vox FIDC</b>: operação do dia, fluxo de caixa e relatórios do fundo.</p>
-        </div>
-        <span className="acesso__rodape">H2 Kapital</span>
-      </aside>
+      <LadoArgos />
       <div className="acesso__card">
 
         {etapa === "entrar" && (
@@ -147,6 +153,70 @@ export default function Acesso({ onEntrar }) {
             </p>
             <button type="button" className="acesso__botao" onClick={() => ir("entrar")}>Voltar para entrar</button>
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Primeiro acesso por link exclusivo (#/primeiro-acesso/<código>): e-mail e CPF meio oculto
+// vêm do link; a pessoa só cria a senha e já entra no Argos.
+export function PrimeiroAcesso({ token, onEntrar }) {
+  const [info, setInfo] = useState(null);                 // null = carregando
+  const [erroLink, setErroLink] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirma, setConfirma] = useState("");
+  const [erro, setErro] = useState("");
+  const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    apiAuth.primeiroAcessoInfo(token).then(setInfo).catch((e) => setErroLink(e.message));
+  }, [token]);
+
+  const senhaOk = regras(senha).every(([, ok]) => ok) && senha === confirma;
+  const criar = async (e) => {
+    e.preventDefault();
+    if (!senhaOk || !info) return;
+    setErro("");
+    setEnviando(true);
+    try { onEntrar(await apiAuth.primeiroAcesso(token, info.email, senha)); }
+    catch (x) { setErro(x.message); setEnviando(false); }
+  };
+  const irLogin = () => { window.location.hash = "#/"; };
+
+  return (
+    <div className="acesso acesso--argos">
+      <LadoArgos />
+      <div className="acesso__card">
+        {erroLink ? (
+          <div className="acesso__form">
+            <span className="primeiro__selo">Primeiro acesso</span>
+            <h1 className="acesso__titulo">Link indisponível</h1>
+            <p className="acesso__texto">{erroLink}</p>
+            <button type="button" className="acesso__botao" onClick={irLogin}>Ir para o login</button>
+          </div>
+        ) : !info ? (
+          <p className="acesso__carregando">Carregando…</p>
+        ) : (
+          <form onSubmit={criar} className="acesso__form">
+            <span className="primeiro__selo">Primeiro acesso</span>
+            <h1 className="acesso__titulo">Crie sua senha</h1>
+            <p className="acesso__texto">Este link é exclusivo para o seu acesso. Confira os seus dados e crie a senha: em seguida você já entra no Argos.</p>
+            <div className="campo">
+              <span className="campo__rotulo">E-mail</span>
+              <div className="primeiro__dado">{info.email}</div>
+            </div>
+            <div className="campo">
+              <span className="campo__rotulo">CPF</span>
+              <div className="primeiro__dado">{info.cpf}</div>
+            </div>
+            <input type="email" autoComplete="username" value={info.email} readOnly hidden />
+            <CamposSenha senha={senha} confirma={confirma} onSenha={(e) => setSenha(e.target.value)}
+              onConfirma={(e) => setConfirma(e.target.value)} rotulo="Crie sua senha" />
+            {erro && <p className="acesso__erro" role="alert">{erro}</p>}
+            <button type="submit" className="acesso__botao" disabled={enviando || !senhaOk}>{enviando ? "Entrando…" : "Criar senha e entrar"}</button>
+            <p className="primeiro__nota">Depois, para entrar de novo, use o seu e-mail e esta senha. O link vale só para este primeiro acesso.</p>
+          </form>
         )}
       </div>
     </div>

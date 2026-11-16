@@ -94,6 +94,15 @@ function lerBases(wb) {
       aceitas: v.aceitas === null || v.aceitas === "" ? null : numero(v.aceitas),
       rejeitadas: v.aceitas === null || v.aceitas === "" ? null : numero(v.rejeitadas) }));
 
+  // AJUSTE PONTUAL (só 13/11/2026, pedido do usuário): Baixas Conciliadas fixadas à mão, porque a
+  // automação releu o extrato e regravou a coluna C. Não é regra: vale só para essa data.
+  const AJUSTE_PONTUAL_CONCILIADAS = { "2026-11-13": 2615295.99 };
+  for (const [dia, valor] of Object.entries(AJUSTE_PONTUAL_CONCILIADAS)) {
+    const linha = aceitas.find((i) => i.data === dia);
+    if (linha) linha.aceitas = valor;
+    else aceitas.push({ data: dia, importadas: null, aceitas: valor, rejeitadas: null });
+  }
+
   const represadas = linhas(ws("Baixas Represadas"),
     { data: "A", operacao: "B", nome: "C", valor: "D", represada: "E", motivo: "F", responsavel: "G" }, "data",
     (v) => ({ data: isoDeValor(v.data), operacao: inteiroOuTexto(v.operacao), nome: texto(v.nome),

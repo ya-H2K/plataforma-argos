@@ -3,7 +3,7 @@ import Operacional from "./components/Operacional.jsx";
 import Caixa from "./components/Caixa.jsx";
 import Usuarios from "./components/Usuarios.jsx";
 import Relatorios from "./components/Relatorios.jsx";
-import Acesso from "./components/Acesso.jsx";
+import Acesso, { PrimeiroAcesso } from "./components/Acesso.jsx";
 import Home from "./components/Home.jsx";
 import { apiAuth } from "./api.js";
 import { AberturaArgos } from "./components/Logos.jsx";
@@ -58,6 +58,9 @@ export default function App() {
   if (usuario === undefined) return <div className="acesso"><p className="acesso__carregando">Carregando…</p></div>;
   // depois do login, sempre começa no início
   const entrar = (u) => { window.location.hash = "#/"; setAba("home"); setAbertura(true); setUsuario(u); };
+  // link exclusivo de primeiro acesso (#/primeiro-acesso/<código>): cria a senha e entra
+  const link = window.location.hash.match(/^#\/primeiro-acesso\/([\w-]+)/);
+  if (link) return <PrimeiroAcesso token={link[1]} onEntrar={entrar} />;
   if (!usuario) return <Acesso onEntrar={entrar} />;
   if (abertura) return <AberturaArgos onFim={fimAbertura} />;
 

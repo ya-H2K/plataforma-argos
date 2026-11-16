@@ -84,7 +84,8 @@ begin
   return new;
 end $$;
 
--- Depois de criar o login: cria o perfil "pendente" (o admin, criado pelo publicador, já entra ativo).
+-- Depois de criar o login: cria o perfil "pendente" (o admin, criado pelo publicador, já entra ativo;
+-- quem vem por link de primeiro acesso também, ver primeiro-acesso.sql).
 create or replace function public._apos_criar_usuario() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
@@ -92,7 +93,23 @@ declare
   v_cpf   text := regexp_replace(coalesce(new.raw_user_meta_data ->> 'cpf', ''), '\D', '', 'g');
   v_admin boolean := coalesce((new.raw_app_meta_data ->> 'vox_admin')::boolean, false);
   v_convite text := new.raw_user_meta_data ->> 'vox_convite';
+  v_link  text := new.raw_user_meta_data ->> 'vox_primeiro_acesso';
+  v_pa    record;
 begin
+  if v_link is not null then
+    select * into v_pa from public.primeiro_acesso
+     where token_hash = encode(extensions.digest(v_link, 'sha256'), 'hex')
+       and usado_em is null and expira_em > now() and email = lower(new.email);
+    if not found then raise exception 'VOX_LINK: link inválido, já usado ou vencido.'; end if;
+    if exists (select 1 from public.perfis where cpf = v_pa.cpf) then
+      raise exception 'VOX_CPF_DUPLICADO: este CPF já está cadastrado com outro e-mail.';
+    end if;
+    insert into public.perfis (id, nome, email, cpf, status, aprovado_em)
+    values (new.id, v_pa.nome, lower(new.email), v_pa.cpf, 'ativo', now());
+    update public.primeiro_acesso set usado_em = now(), usuario = new.id where token_hash = v_pa.token_hash;
+    return new;
+  end if;
+
   if v_convite is not null and exists (select 1 from public.convites where token = v_convite
                                        and criado_em > now() - interval '1 hour') then
     v_admin := true;

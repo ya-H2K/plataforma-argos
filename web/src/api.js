@@ -435,6 +435,40 @@ export const apiAuth = {
     return { ok: true };
   },
 
+  // Primeiro acesso por link (#/primeiro-acesso/<código>, supabase/primeiro-acesso.sql):
+  // a tela mostra e-mail e CPF meio oculto; a pessoa cria a senha e já entra (sem aprovação).
+  primeiroAcessoInfo: (token) => rpc("vox_primeiro_acesso", { p_token: token },
+    "Não foi possível abrir o link agora. Tente de novo.", { sessao: false }),
+  primeiroAcesso: async (token, email, senha) => {
+    if (!regrasOk(senha)) throw new Error(MSG_SENHA);
+    await supabase.auth.signOut({ scope: "local" });       // se havia outra pessoa logada neste navegador
+    const { data, error } = await supabase.auth.signUp({
+      email, password: senha, options: { data: { vox_primeiro_acesso: token } },
+    });
+    if (error) {
+      if (error.code === "user_already_exists" || /already registered|already exists/i.test(error.message)) {
+        throw new Error("Este e-mail já tem cadastro no Argos. Entre pelo login ou use \"Esqueci minha senha\".");
+      }
+      if (error.code === "weak_password") throw new Error(MSG_SENHA);
+      if (error.status === 429) throw new Error("Muitas tentativas. Aguarde alguns minutos e tente de novo.");
+      if (/database error/i.test(error.message)) {
+        throw new Error("Não foi possível criar a senha: o link pode ter vencido ou já ter sido usado. Fale com o administrador.");
+      }
+      throw new Error("Não foi possível concluir agora. Tente de novo.");
+    }
+    if (!data?.session) {
+      const { error: e1 } = await supabase.auth.signInWithPassword({ email, password: senha });
+      if (e1) throw new Error("Senha criada. Entre com o seu e-mail e a senha na tela de login.");
+    }
+    const { data: eu, error: e2 } = await supabase.rpc("vox_eu");
+    if (e2 || !eu || eu.status !== "ativo") {
+      await supabase.auth.signOut({ scope: "local" });
+      throw new Error("Senha criada, mas não foi possível entrar agora. Tente pela tela de login.");
+    }
+    vigiarSessao();
+    return usuarioDe(eu);
+  },
+
   // Esqueci minha senha: a nova senha só vale depois que o admin aprovar.
   esqueci: async (email, senha) => {
     if (!regrasOk(senha)) throw new Error(MSG_SENHA);

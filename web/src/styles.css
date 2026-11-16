@@ -1248,3 +1248,8 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 /* Mapa de Evolução de Cotas: relatório em HTML (03/11/2026) */
 .mec__visor { max-width: 1100px; margin: 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .mec__quadro { display: block; width: 100%; height: calc(100vh - 240px); min-height: 600px; border: 0; background: #fff; }
+
+/* primeiro acesso por link (16/11/2026) */
+.primeiro__selo { justify-self: start; margin-bottom: -.6rem; color: var(--gold); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; }
+.primeiro__dado { padding: .65rem .8rem; border: 1px dashed var(--line); color: var(--text); font-size: .95rem; overflow-wrap: anywhere; }
+.primeiro__nota { margin: 0; color: var(--text-dim); font-size: .78rem; line-height: 1.45; text-align: center; }
