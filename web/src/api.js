@@ -183,6 +183,22 @@ export const apiRelatorios = {
     if (!r["rel:despesas"]) throw Object.assign(new Error("O relatório de despesas ainda não foi publicado."), { status: 404 });
     return { despesas: r["rel:despesas"], meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
   },
+  // DRE por Produto: todos os meses da planilha publicada e o link para baixá-la (arquivo inteiro).
+  dre: async () => {
+    const r = await lerPainel(["rel:dre", "inicio"]);
+    if (!r["rel:dre"]) throw Object.assign(new Error("O DRE por Produto ainda não foi publicado."), { status: 404 });
+    return { dre: r["rel:dre"], meta: { intervaloAtualizacaoMin: r.inicio?.intervaloAtualizacaoMin || 10 } };
+  },
+  baixarDre: async (arquivo) => {
+    const { data, error } = await supabase.storage.from("caixa").createSignedUrl("dre/atual.xlsx", 60, { download: arquivo.nome });
+    if (error || !data?.signedUrl) throw erroDe(error, "Arquivo indisponível no momento.");
+    const a = document.createElement("a");
+    a.href = data.signedUrl;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  },
   baixarDespesas: async (arquivo) => {
     const { data, error } = await supabase.storage.from("caixa").createSignedUrl("despesas/atual.xlsx", 60, { download: arquivo.nome });
     if (error || !data?.signedUrl) throw erroDe(error, "Arquivo indisponível no momento.");

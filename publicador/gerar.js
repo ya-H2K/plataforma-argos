@@ -110,6 +110,13 @@ export function gerarDespesas(despesas, arquivo) {
     arquivo: { nome: arquivo.nome, publicadoEm: new Date(arquivo.mtimeMs).toISOString() } } };
 }
 
+// DRE por Produto (todos os usuários veem): todos os meses da planilha publicada e o arquivo.
+export function gerarDre(dre, arquivo) {
+  if (!dre) return {};
+  return { "rel:dre": { ...dre,
+    arquivo: { nome: arquivo.nome, publicadoEm: new Date(arquivo.mtimeMs).toISOString() } } };
+}
+
 // Apresentações de Resultados (todos os usuários veem): a lista dos PDFs, do mais recente
 // para o mais antigo. O PDF fica no bucket "caixa", em apresentacoes/AAAA-MM.pdf.
 export function gerarApresentacoes(itens, chave = "rel:apresentacoes") {

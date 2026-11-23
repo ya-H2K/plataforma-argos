@@ -15,6 +15,9 @@ export const config = {
   // Despesas do fundo: pasta com a versão final (publicada uma vez por mês). Vale o .xlsx mais recente.
   despesasPublicado: process.env.DESPESAS_PUBLICADO ||
     "H:\\3. Gestão\\VOX FIDC\\8.Estudos e levantamentos\\Despesas Vox - Publicado",
+  // DRE por Produto: pasta com UM .xlsx que tem todos os meses (vale o mais recente da pasta).
+  drePublicado: process.env.DRE_PUBLICADO ||
+    "H:\\3. Gestão\\VOX FIDC\\8.Estudos e levantamentos\\DRE por Produto - Publicado",
   // Apresentações de Resultados: pasta com os PDFs publicados (um por mês; o mês vem do nome,
   // ex.: "Apresentação de Resultados - FIDC VOX 09.26.pdf").
   apresentacoesPublicado: process.env.APRESENTACOES_PUBLICADO ||

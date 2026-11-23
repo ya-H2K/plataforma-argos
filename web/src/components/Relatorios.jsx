@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiRelatorios } from "../api.js";
 import { BarraTopo } from "./Cabecalho.jsx";
 import Despesas from "./Despesas.jsx";
+import Dre from "./Dre.jsx";
 import Apresentacoes from "./Apresentacoes.jsx";
 import Balancetes from "./Balancetes.jsx";
 import Mec from "./Mec.jsx";
@@ -19,6 +20,7 @@ import SeletorMes from "./SeletorMes.jsx";
 export const RELATORIOS = [
   { id: "desagio", nome: "Deságio", descricao: "Deságio das aquisições." },
   { id: "despesas", nome: "Despesas", descricao: "Detalhamento das despesas mensais." },
+  { id: "dre", nome: "DRE por Produto", descricao: "Resultado mensal de cada produto." },
   { id: "apresentacoes", nome: "Apresentação de Resultados", descricao: "Apresentações mensais do fundo." },
   { id: "balancetes", nome: "Balancete", descricao: "Balancete e razão de cada mês." },
   { id: "mec", nome: "Mapa de Evolução de Cotas", descricao: "MEC das cotas Sub e Mezanino, mês a mês (PDF e Excel)." },
@@ -75,6 +77,7 @@ export default function Relatorios({ aba, onAba }) {
   if (sub === "laminas") return <Apresentacoes key="laminas" tipo="laminas" aba={aba} onAba={onAba} onVoltar={voltar("laminas")} />;
   if (sub === "flash") return <Apresentacoes key="flash" tipo="flash" aba={aba} onAba={onAba} onVoltar={voltar("flash")} />;
   if (sub === "apresentacoes") return <Apresentacoes aba={aba} onAba={onAba} onVoltar={voltar("apresentacoes")} />;
+  if (sub === "dre") return <Dre aba={aba} onAba={onAba} onVoltar={voltar("dre")} />;
   if (sub === "despesas") return <Despesas aba={aba} onAba={onAba} onVoltar={voltar("despesas")} />;
 
   // Duas abas: "Relatórios do fundo" (todos) e "Restritos" (#/relatorios/restritos), que só aparece

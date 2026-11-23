@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { brl, curta, pct } from "../formato.js";
 
 // Largura real do contêiner, para desenhar o SVG em pixels (texto nítido, sem distorcer).
-function useLargura() {
+export function useLargura() {
   const ref = useRef(null);
   const [largura, setLargura] = useState(0);
   useEffect(() => {
@@ -38,7 +38,7 @@ function escala(max, passos = 4) {
 
 const M = { top: 22, right: 16, bottom: 30, left: 66 };
 const ALTURA = 260;
-const limitar = (v, a, b) => Math.min(Math.max(v, a), b);
+export const limitar = (v, a, b) => Math.min(Math.max(v, a), b);
 
 function Grade({ ticks, y, largura, formato }) {
   return ticks.map((t) => (
@@ -83,12 +83,12 @@ function Etiqueta({ x, y, texto, largura = 88, ancora = "meio" }) {
   );
 }
 
-function Dica({ estilo, children }) {
+export function Dica({ estilo, children }) {
   if (!estilo) return null;
   return <div className="graf__dica" style={estilo}>{children}</div>;
 }
 
-function Cartao({ titulo, lateral, children }) {
+export function Cartao({ titulo, lateral, children }) {
   return (
     <section className="card card--grafico" aria-label={titulo}>
       <div className="card--grafico__topo">

@@ -12,13 +12,14 @@ import { fileURLToPath } from "node:url";
 import { config, agora } from "../server/config.js";
 import { obterBases } from "../server/planilha.js";
 import { listarPublicados, obterCaixa, prepararPublicados } from "../server/caixa.js";
-import { gerarOperacional, gerarCaixa, gerarRelatorios, gerarDespesas, gerarApresentacoes, gerarBalancetes, cortesDoDia, opcoesDe } from "./gerar.js";
+import { gerarOperacional, gerarCaixa, gerarRelatorios, gerarDespesas, gerarDre, gerarApresentacoes, gerarBalancetes, cortesDoDia, opcoesDe } from "./gerar.js";
 import { listarBalancetes, caminhoNuvem, TIPO_CONTEUDO } from "../server/balancetes.js";
 import { listarApresentacoes } from "../server/apresentacoes.js";
 import { listarLaminas } from "../server/laminas.js";
 import { listarFlash } from "../server/flash.js";
 import { listarMec, gerarMec, caminhoNuvemMec, TIPO_MEC } from "../server/mec.js";
 import { arquivoPublicado, lerDespesas } from "../server/despesas.js";
+import { lerDre } from "../server/dre.js";
 import { conectar, gravarChaves, apagarChaves, enviarArquivo } from "./nuvem.js";
 import { statusDoDia } from "./bauk.js";
 import { avisarAprovados } from "./emails.js";
@@ -388,6 +389,13 @@ export async function publicar({ tudo = false } = {}) {
     if (despesasArq) Object.assign(mapa, gerarDespesas(await lerDespesas(despesasArq.caminho), despesasArq));
   } catch (e) { aviso(`Despesas: ${e.message}`); despesasArq = null; }
 
+  // DRE por Produto: um arquivo só, com todos os meses (vale o mais recente da pasta)
+  let dreArq = null;
+  try {
+    dreArq = await arquivoPublicado(config.drePublicado);
+    if (dreArq) Object.assign(mapa, gerarDre(await lerDre(dreArq.caminho), dreArq));
+  } catch (e) { aviso(`DRE por Produto: ${e.message}`); dreArq = null; }
+
   // Apresentações de Resultados: os PDFs da pasta de publicados (um por mês)
   let apresentacoes = null;
   try {
@@ -461,6 +469,12 @@ export async function publicar({ tudo = false } = {}) {
   if (despesasArq && (tudo || arquivos.despesas !== despesasArq.mtimeMs)) {
     await enviarArquivo(sb, "despesas/atual.xlsx", fs.readFileSync(despesasArq.caminho));
     arquivos.despesas = despesasArq.mtimeMs;
+    enviados++;
+  }
+
+  if (dreArq && (tudo || arquivos.dre !== dreArq.mtimeMs)) {
+    await enviarArquivo(sb, "dre/atual.xlsx", fs.readFileSync(dreArq.caminho));
+    arquivos.dre = dreArq.mtimeMs;
     enviados++;
   }
 
@@ -558,6 +572,12 @@ async function assinatura() {
     }
   } catch { partes.push("sem-despesas"); }
   try {
+    for (const n of fs.readdirSync(config.drePublicado).sort()) {
+      if (n.startsWith("~$") || !/\.xlsx$/i.test(n)) continue;
+      partes.push(`dre:${n}:${fs.statSync(path.join(config.drePublicado, n)).mtimeMs}`);
+    }
+  } catch { partes.push("sem-dre"); }
+  try {
     for (const n of fs.readdirSync(config.apresentacoesPublicado).sort()) {
       if (n.startsWith("~$") || !/\.pdf$/i.test(n)) continue;
       partes.push(`a:${n}:${fs.statSync(path.join(config.apresentacoesPublicado, n)).mtimeMs}`);
@@ -630,6 +650,7 @@ async function vigiar() {
   log(`Planilha: ${config.planilha}`);
   log(`Caixa:    ${config.caixaPublicado}`);
   log(`Despesas: ${config.despesasPublicado}`);
+  log(`DRE por Produto: ${config.drePublicado}`);
   log(`Apresentações: ${config.apresentacoesPublicado}`);
   log(`Balancete e Razão: ${config.balancetesPublicado}`);
   log(`Lâminas: ${config.laminasPublicado}`);

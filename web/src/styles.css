@@ -1253,3 +1253,25 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .primeiro__selo { justify-self: start; margin-bottom: -.6rem; color: var(--gold); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; }
 .primeiro__dado { padding: .65rem .8rem; border: 1px dashed var(--line); color: var(--text); font-size: .95rem; overflow-wrap: anywhere; }
 .primeiro__nota { margin: 0; color: var(--text-dim); font-size: .78rem; line-height: 1.45; text-align: center; }
+
+/* ------------------------------------------------ DRE por Produto (Relatórios) */
+.dre-indicadores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(0, 1.35fr); gap: 1rem; }
+.dre-indicadores .card--indicador .card__rotulo { min-height: 2.7em; }
+.dre-indicadores .card__valor { font-size: clamp(.85rem, 8cqi, 1.3rem); }
+.dre-indicadores .card--fechamento .card__valor { font-size: clamp(1rem, 9cqi, 1.6rem); }
+.dre-tabela td.dre-tabela__res { font-weight: 600; }
+.dre-tabela td.dre-tabela__res:not(.negativo):not(.zero) { color: var(--gold-bright); }
+.dre-tabela tfoot th, .dre-tabela tfoot td { padding: .7rem .55rem; border-top: 1px solid var(--linha-forte); font-weight: 600; white-space: nowrap; }
+.dre-tabela tfoot th { text-align: left; padding-left: 0; }
+.dre-tabela tfoot > tr > * { border-bottom: 0; }
+.dre-tabela tfoot td:not(.negativo):not(.zero) { color: var(--text); }
+.dre-tabela tfoot td.dre-tabela__res:not(.negativo) { color: var(--gold-bright); }
+.dre-rodape { display: flex; justify-content: space-between; gap: .5rem 1.5rem; flex-wrap: wrap; color: var(--text-dim); font-size: .75rem; }
+.dre-cascata__soma { fill: var(--gold); opacity: .85; }
+.dre-cascata__sub { fill: var(--nao_realizado); opacity: .85; }
+.dre-cascata__fim { fill: var(--gold-bright); }
+.dre-cascata__ponte { stroke: var(--linha-forte); stroke-width: 1; stroke-dasharray: 3 3; }
+.dre-cascata__valor { fill: var(--text); }
+.dre-cascata__valor-fim { fill: var(--gold-bright); font-size: 12px; }
+@media (max-width: 1100px) { .dre-indicadores { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .dre-indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dre-indicadores > :last-child { grid-column: 1 / -1; } }
