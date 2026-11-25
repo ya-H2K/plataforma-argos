@@ -268,6 +268,20 @@ function lerRepresadas() {
   } catch { return null; }                  // ainda não existe ou está sendo gravado
 }
 
+// ---------- Vencidos do estoque D-1 (vencidos_estoque.py) ----------
+// historico.json: {"dias": {"AAAA-MM-DD": {dataEstoque, dataLimite, ccb, urfa, valor, ...}}}. O valor de cada
+// dia entra no total de Baixas Represadas Acumulado (todos veem só o total); o detalhe vai na chave
+// "admin:represadas" (só o admin).
+function lerVencidos() {
+  try {
+    const j = JSON.parse(fs.readFileSync(config.vencidosHistorico, "utf-8"));
+    const dias = Object.entries(j.dias || {}).sort(([a], [b]) => a.localeCompare(b))
+      .map(([data, v]) => ({ data, dataEstoque: v.dataEstoque, dataLimite: v.dataLimite, diasVencidos: v.diasVencidos,
+        valor: Number(v.valor) || 0, ccb: v.ccb, urfa: v.urfa }));
+    return dias;
+  } catch { return []; }                     // ainda não existe ou está sendo gravado
+}
+
 // ---------- horário em que cada etapa ficou OK ----------
 // A cada minuto o publicador olha o status das etapas de hoje. Quando vê uma etapa passar de
 // "não OK" para OK, guarda a hora (publicador/.horarios-etapas.json). Só vale se a observação
@@ -353,8 +367,10 @@ export async function publicar({ tudo = false } = {}) {
   if (leitura.erro) aviso(leitura.erro);
   conferirBauk(leitura.bases);
   observarEtapas(leitura.bases);
+  const vencidos = lerVencidos();
   const mapa = gerarOperacional({ ...leitura.bases, statusBauk: statusBaukParaBases(), dataBauk,
-    chegadasRpe: lerChegadasRpe(), horariosEtapas: horasEtapas() }, config, agora());
+    chegadasRpe: lerChegadasRpe(), horariosEtapas: horasEtapas(),
+    vencidosDia: vencidos.map(({ data, valor }) => ({ data, valor })) }, config, agora());
 
   let publicados = [];
   try { publicados = await listarPublicados(config.caixaPublicado, config.caixaDesde); }
@@ -372,7 +388,7 @@ export async function publicar({ tudo = false } = {}) {
   if (carteira && await conferirRestritos(sb)) mapa["restrito:carteira"] = carteira;
 
   const represadasAdmin = lerRepresadas();
-  if (represadasAdmin) mapa["admin:represadas"] = represadasAdmin;
+  if (represadasAdmin || vencidos.length) mapa["admin:represadas"] = { itens: [], ...represadasAdmin, vencidos };
 
   // Resumo de Baixas (restrito): o resumo vai na chave; o título a título, para a pasta restrita do Storage
   const baixas = lerResumoBaixas();
@@ -634,6 +650,7 @@ async function assinatura() {
     }
   } catch { partes.push("sem-baixas"); }
   try { partes.push(`rp:${fs.statSync(config.represadasEstado).mtimeMs}`); } catch { partes.push("sem-represadas"); }
+  try { partes.push(`vc:${fs.statSync(config.vencidosHistorico).mtimeMs}`); } catch { partes.push("sem-vencidos"); }
   partes.push(arquivosRestritosOk ? "arquivos-restritos" : "sem-arquivos-restritos");
   partes.push(restritosOk ? "restritos" : "sem-restritos");
   partes.push(hash(statusBaukParaBases()), hash(dataBauk), hash(horasEtapas()));
@@ -658,6 +675,7 @@ async function vigiar() {
   log(`MEC: ${config.mecPublicado}`);
   log(`Chegada dos arquivos RPE: ${config.rpeChegadas}`);
   log(`Carteira em Dia: ${config.carteiraHistorico}`);
+  log(`Vencidos do estoque: ${config.vencidosHistorico}`);
   log(`Resumo de Baixas: ${config.resumoBaixas} (título a título guardado por ${config.baixasManterMeses} meses)`);
   try {
     const copiados = await prepararPublicados({ pasta: config.caixaPublicado, modeloTrabalho: config.caixaTrabalho, importar: config.caixaImportar });

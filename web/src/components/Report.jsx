@@ -112,19 +112,32 @@ function CardValor({ rotulo, valor }) {
 // hora: discreta, à direita do título (Liquidação Total = última liquidação do dia; Baixas Conciliadas =
 // hora em que o valor apareceu). Sem hora, o título fica sozinho, como antes.
 // Só o admin: clicar em "Baixas Represadas Acumulado" mostra de que pasta (data) e arquivo vem o
-// acumulado do dia: as represadas da pasta "represadas" até esse dia que ainda não tinham sido encerradas.
+// acumulado do dia: as represadas da pasta "represadas" até esse dia que ainda não tinham sido encerradas
+// e os vencidos do estoque D-1 (vencidos_estoque.py; antes de o estoque do dia chegar, o do dia anterior).
 function OrigemRepresadas({ iso }) {
-  const [itens, setItens] = useState(null);
+  const [dados, setDados] = useState(null);
   const [erro, setErro] = useState(false);
-  useEffect(() => { api.represadas().then(setItens).catch(() => setErro(true)); }, []);
+  useEffect(() => { api.represadas().then(setDados).catch(() => setErro(true)); }, []);
   const br = (d) => `${d.slice(8, 10)}/${d.slice(5, 7)}`;
-  const abertas = (itens || []).filter((r) => r.data <= iso && (!r.encerrada || r.encerrada > iso));
+  const abertas = (dados?.itens || []).filter((r) => r.data <= iso && (!r.encerrada || r.encerrada > iso));
+  const venc = (dados?.vencidos || []).filter((v) => v.data <= iso).at(-1);
   return (
     <ul className="origem-represadas">
       {erro ? <li>Não foi possível carregar agora.</li>
-        : !itens ? <li>Carregando…</li>
-        : !abertas.length ? <li>Nenhuma represada em aberto neste dia.</li>
-        : abertas.map((r) => <li key={r.data + r.arquivo}><b>{br(r.data)}</b><span>{r.arquivo}</span><em>{brl(r.valor)}</em></li>)}
+        : !dados ? <li>Carregando…</li>
+        : <>
+          {abertas.length ? abertas.map((r) => <li key={r.data + r.arquivo}><b>{br(r.data)}</b><span>{r.arquivo}</span><em>{brl(r.valor)}</em></li>)
+            : <li>Nenhuma represada em aberto neste dia.</li>}
+          {venc && venc.valor > 0 && <>
+            <li className="origem-represadas__vencidos" title={`Vencidos até ${br(venc.dataLimite)} no estoque de ${br(venc.dataEstoque)}`}>
+              <b>{br(venc.dataEstoque)}</b>
+              <span><i className="selo-vencidos">Vencidos</i> estoque de {br(venc.dataEstoque)}</span>
+              <em>{brl(venc.valor)}</em>
+            </li>
+            <li className="origem-represadas__sub"><span>CCB</span><em>{brl(venc.ccb?.valor || 0)}</em></li>
+            <li className="origem-represadas__sub"><span>URFA</span><em>{brl(venc.urfa?.valor || 0)}</em></li>
+          </>}
+        </>}
     </ul>
   );
 }

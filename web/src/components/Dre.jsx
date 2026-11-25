@@ -12,9 +12,7 @@ import { Cartao, Dica, limitar, milhoes, useLargura } from "./Graficos.jsx";
 // A tela mostra só um mês (as 5 linhas + Resultado, a tabela por produto e a composição do
 // resultado). O histórico completo é a própria planilha, no botão "Baixar planilha".
 
-const NOMES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const LONGOS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-const curto = (m) => `${NOMES[Number(m.slice(5)) - 1]}/${m.slice(2, 4)}`;
 const longo = (m) => `${LONGOS[Number(m.slice(5)) - 1]} ${m.slice(0, 4)}`;
 const dataHora = (iso) => new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(iso));
 const pct1 = (v) => `${(Math.abs(v) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
@@ -96,9 +94,6 @@ export default function Dre({ aba, onAba, onVoltar }) {
                 </button>
               )}
             </div>
-            {meses.length > 0 && (
-              <span className="publicacao__info">Planilha completa · {curto(meses[0])} a {curto(meses.at(-1))}</span>
-            )}
           </div>
         </div>
 

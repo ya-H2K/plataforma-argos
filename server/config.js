@@ -47,6 +47,9 @@ export const config = {
   // Baixas represadas em aberto (estado do verificador do preencher_fluxo_operacional_vox.py): só o admin
   // vê, no Report, de que pasta/arquivo vem o acumulado.
   represadasEstado: process.env.REPRESADAS_ESTADO || "C:\\Automacao\\Vox\\represadas_estado.json",
+  // Vencidos do estoque D-1 (automação vencidos_estoque.py): entram no total de Baixas Represadas
+  // Acumulado de cada dia; o detalhe (CCB/URFA, data do estoque) só o admin vê.
+  vencidosHistorico: process.env.VENCIDOS_HISTORICO || "C:\\Automacao\\Vox\\vencidos\\historico.json",
   baixasManterMeses: Number(process.env.BAIXAS_MANTER_MESES || 12),
   // Primeiro mês que aparece no filtro do site.
   caixaDesde: process.env.CAIXA_DESDE || "2026-07",

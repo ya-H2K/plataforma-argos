@@ -94,8 +94,12 @@ export const api = {
     return { meta, dia };
   },
 
-  // Só o admin recebe: represadas com data da pasta, arquivo e dia em que foram encerradas.
-  represadas: async () => (await lerPainel(["admin:represadas"]))["admin:represadas"]?.itens || [],
+  // Só o admin recebe: represadas com data da pasta, arquivo e dia em que foram encerradas, e os
+  // vencidos do estoque de cada dia (que entram no total de Baixas Represadas Acumulado).
+  represadas: async () => {
+    const r = (await lerPainel(["admin:represadas"]))["admin:represadas"];
+    return { itens: r?.itens || [], vencidos: r?.vencidos || [] };
+  },
 
   // Só o admin recebe (chaves "admin:..."): hora de chegada de cada arquivo RPE no SFTP.
   horarios: async (iso) => {

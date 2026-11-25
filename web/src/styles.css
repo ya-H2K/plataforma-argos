@@ -1167,6 +1167,10 @@ a.marca:hover .olho-argos, a.marca:focus-visible .olho-argos { transform: scale(
 .origem-represadas li span { flex: 1; min-width: 0; }
 .origem-represadas em { font-style: normal; color: var(--text); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .origem-represadas b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.origem-represadas__vencidos { padding-top: .3rem; border-top: 1px dashed var(--line); }
+.origem-represadas__sub { padding-left: 2.6rem; }
+.origem-represadas__sub em { color: var(--text-dim); }
+.selo-vencidos { display: inline-block; margin-right: .35rem; padding: 0 .35rem; border: 1px solid var(--nao_realizado); color: var(--nao_realizado); font-style: normal; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; line-height: 1.5; }
 @keyframes origem-entra { from { opacity: 0; transform: translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .origem-represadas { animation: none; } }
 

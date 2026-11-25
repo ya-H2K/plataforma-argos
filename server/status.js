@@ -243,7 +243,11 @@ function valorDoDia(hist, iso) {
 }
 function represadasAcumuladoDoDia(b, iso) {
   const hist = b.represadasAcumuladoDia;
-  return hist?.length ? valorDoDia(hist, iso) : b.represadasAcumulado ?? 0;
+  const arquivos = hist?.length ? valorDoDia(hist, iso) : b.represadasAcumulado ?? 0;
+  // + vencidos do estoque D-1 (vencidos_estoque.py). Antes de o estoque do dia chegar, vale o do dia
+  // anterior; antes do 1º cálculo, 0.
+  const vencidos = b.vencidosDia?.length ? valorDoDia(b.vencidosDia, iso) : 0;
+  return Math.round((arquivos + vencidos) * 100) / 100;
 }
 // Liquidação pendente acumulada do dia: histórico R:S das abas URFA + Endosso (gravado pela
 // automação); mesma regra do histórico das represadas. Sem histórico, soma dos P2.
@@ -277,7 +281,7 @@ function valores(b, iso, aberto) {
       somaLiq(b.liquidacaoUrfa, naoLiquidado) + somaLiq(b.liquidacaoEndosso, naoLiquidado),
     baixasRepresadasDia: soma(doDia(b.represadas, iso), "valor"),   // L14
     liquidacaoPendenteAcumulado: liquidacaoAcumuladoDoDia(b, iso),  // F17 (histórico R:S; sem ele, P2)
-    baixasRepresadasAcumulado: represadasAcumuladoDoDia(b, iso),    // L17 (histórico I:J)
+    baixasRepresadasAcumulado: represadasAcumuladoDoDia(b, iso),    // L17 (histórico I:J) + vencidos do estoque
   };
 }
 
